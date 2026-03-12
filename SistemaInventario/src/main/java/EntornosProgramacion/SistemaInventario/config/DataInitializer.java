@@ -19,13 +19,13 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.seed-admin:true}")
+    @Value("${app.seed-admin:false}")
     private boolean seedAdmin;
 
-    @Value("${app.seed-admin.email:admin@inventario.local}")
+    @Value("${app.seed-admin.email:}")
     private String adminEmail;
 
-    @Value("${app.seed-admin.password:Admin12345!}")
+    @Value("${app.seed-admin.password:}")
     private String adminPassword;
 
     @Value("${app.seed-admin.nombre:Administrador}")
@@ -36,16 +36,42 @@ public class DataInitializer implements CommandLineRunner {
         Rol adminRole = ensureRole(RoleName.ADMIN);
         ensureRole(RoleName.EMPLEADO);
 
-        if (seedAdmin && !usuarioRepository.existsByEmail(adminEmail)) {
+        if (!seedAdmin || adminEmail == null || adminEmail.isBlank()
+                || adminPassword == null || adminPassword.isBlank()) {
+            return;
+        }
+
+        String normalizedAdminEmail = adminEmail.trim().toLowerCase();
+
+        Usuario adminUser = usuarioRepository.findByEmailWithRol(normalizedAdminEmail).orElse(null);
+
+        if (adminUser == null) {
             Usuario admin = Usuario
                 .builder()
                 .nombre(adminNombre)
-                .email(adminEmail)
+                .email(normalizedAdminEmail)
                 .password(passwordEncoder.encode(adminPassword))
                 .activo(true)
                 .rol(adminRole)
                 .build();
             usuarioRepository.save(admin);
+            return;
+        }
+
+        boolean needsUpdate = false;
+
+        if (!RoleName.ADMIN.equals(adminUser.getRol().getNombre())) {
+            adminUser.setRol(adminRole);
+            needsUpdate = true;
+        }
+
+        if (!Boolean.TRUE.equals(adminUser.getActivo())) {
+            adminUser.setActivo(true);
+            needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+            usuarioRepository.save(adminUser);
         }
     }
 

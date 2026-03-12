@@ -5,6 +5,7 @@ import EntornosProgramacion.SistemaInventario.dto.request.RegisterRequest;
 import EntornosProgramacion.SistemaInventario.dto.response.AuthResponse;
 import EntornosProgramacion.SistemaInventario.dto.response.UsuarioResponse;
 import EntornosProgramacion.SistemaInventario.service.AuthService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@SecurityRequirements
 public class AuthController {
 
     private final AuthService authService;
