@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query"
 import { usuariosApi } from "../api/usuarios-api"
 import { UsuarioEditDialog } from "./usuario-edit-dialog"
 import { UsuarioCreateDialog } from "./usuario-create-dialog"
-import { UsuarioChangePasswordDialog } from "./usuario-change-password-dialog"
 import type { UsuarioResponse } from "@/shared/types"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
@@ -21,7 +20,6 @@ import {
 export function UsuariosPage() {
   const [editing, setEditing] = useState<UsuarioResponse | null>(null)
   const [creating, setCreating] = useState(false)
-  const [changingPassword, setChangingPassword] = useState<UsuarioResponse | null>(null)
 
   const { data: usuarios = [], isLoading } = useQuery({
     queryKey: ["usuarios"],
@@ -76,14 +74,9 @@ export function UsuariosPage() {
                     </TableCell>
                     <TableCell>{formatDate(u.fechaCreacion)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setEditing(u)}>
-                          Editar
-                        </Button>
-                        <Button size="sm" variant="secondary" onClick={() => setChangingPassword(u)}>
-                          Cambiar Contraseña
-                        </Button>
-                      </div>
+                      <Button size="sm" variant="outline" onClick={() => setEditing(u)}>
+                        Editar
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -102,12 +95,6 @@ export function UsuariosPage() {
       <UsuarioCreateDialog
         open={creating}
         onOpenChange={setCreating}
-      />
-
-      <UsuarioChangePasswordDialog
-        open={!!changingPassword}
-        onOpenChange={(open) => { if (!open) setChangingPassword(null) }}
-        usuario={changingPassword}
       />
     </div>
   )

@@ -27,12 +27,19 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select"
 
-const schema = z.object({
-  nombre: z.string().max(100).optional(),
-  email: z.string().email("Email no válido").optional().or(z.literal("")),
-  rol: z.enum(["ADMIN", "EMPLEADO"]).optional(),
-  activo: z.boolean().optional(),
-})
+const schema = z
+  .object({
+    nombre: z.string().max(100).optional(),
+    email: z.string().email("Email no válido").optional().or(z.literal("")),
+    rol: z.enum(["ADMIN", "EMPLEADO"]).optional(),
+    activo: z.boolean().optional(),
+    nuevaPassword: z.string().min(8, "Mínimo 8 caracteres").max(100).optional().or(z.literal("")),
+    confirmarPassword: z.string().optional().or(z.literal("")),
+  })
+  .refine(
+    (d) => !d.nuevaPassword || d.nuevaPassword === d.confirmarPassword,
+    { message: "Las contraseñas no coinciden", path: ["confirmarPassword"] },
+  )
 
 type FormData = z.infer<typeof schema>
 
@@ -61,18 +68,24 @@ export function UsuarioEditDialog({ open, onOpenChange, usuario }: Props) {
         email: usuario.email,
         rol: usuario.rol as RoleName,
         activo: usuario.activo,
+        nuevaPassword: "",
+        confirmarPassword: "",
       })
     }
   }, [open, usuario, reset])
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) =>
-      usuariosApi.actualizar(usuario!.id, {
+    mutationFn: async (data: FormData) => {
+      await usuariosApi.actualizar(usuario!.id, {
         nombre: data.nombre || undefined,
         email: data.email || undefined,
         rol: data.rol as RoleName | undefined,
         activo: data.activo,
-      }),
+      })
+      if (data.nuevaPassword) {
+        await usuariosApi.cambiarPassword(usuario!.id, { nuevaPassword: data.nuevaPassword })
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["usuarios"] })
       toast.success("Usuario actualizado")
@@ -124,6 +137,20 @@ export function UsuarioEditDialog({ open, onOpenChange, usuario }: Props) {
                 <SelectItem value="false">Inactivo</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Nueva Contraseña <span className="text-muted-foreground text-xs">(dejar vacío para no cambiar)</span></Label>
+            <Input type="password" {...register("nuevaPassword")} autoComplete="new-password" />
+            {errors.nuevaPassword && (
+              <p className="text-sm text-destructive">{errors.nuevaPassword.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label>Confirmar Contraseña</Label>
+            <Input type="password" {...register("confirmarPassword")} autoComplete="new-password" />
+            {errors.confirmarPassword && (
+              <p className="text-sm text-destructive">{errors.confirmarPassword.message}</p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
