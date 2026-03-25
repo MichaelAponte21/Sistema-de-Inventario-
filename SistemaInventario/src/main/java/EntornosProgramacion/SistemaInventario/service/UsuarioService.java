@@ -1,5 +1,6 @@
 package EntornosProgramacion.SistemaInventario.service;
 
+import EntornosProgramacion.SistemaInventario.dto.request.UsuarioCreateRequest;
 import EntornosProgramacion.SistemaInventario.dto.request.UsuarioUpdateRequest;
 import EntornosProgramacion.SistemaInventario.dto.response.UsuarioResponse;
 import EntornosProgramacion.SistemaInventario.exception.BusinessException;
@@ -11,6 +12,7 @@ import EntornosProgramacion.SistemaInventario.repository.UsuarioRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,28 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public UsuarioResponse crear(UsuarioCreateRequest request) {
+        if (usuarioRepository.existsByEmail(request.email())) {
+            throw new BusinessException("El email ya esta registrado");
+        }
+
+        Rol rol = rolRepository
+            .findByNombre(request.rol())
+            .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + request.rol()));
+
+        Usuario usuario = Usuario.builder()
+            .nombre(request.nombre().trim())
+            .email(request.email().trim().toLowerCase())
+            .password(passwordEncoder.encode(request.password()))
+            .rol(rol)
+            .activo(true)
+            .build();
+
+        return toResponse(usuarioRepository.save(usuario));
+    }
 
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listarTodos() {
