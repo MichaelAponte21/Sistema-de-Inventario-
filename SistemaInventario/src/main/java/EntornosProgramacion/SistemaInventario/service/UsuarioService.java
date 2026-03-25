@@ -1,7 +1,9 @@
 package EntornosProgramacion.SistemaInventario.service;
 
+import EntornosProgramacion.SistemaInventario.dto.request.ChangePasswordRequest;
 import EntornosProgramacion.SistemaInventario.dto.request.UsuarioCreateRequest;
 import EntornosProgramacion.SistemaInventario.dto.request.UsuarioUpdateRequest;
+import EntornosProgramacion.SistemaInventario.dto.response.MessageResponse;
 import EntornosProgramacion.SistemaInventario.dto.response.UsuarioResponse;
 import EntornosProgramacion.SistemaInventario.exception.BusinessException;
 import EntornosProgramacion.SistemaInventario.exception.ResourceNotFoundException;
@@ -90,6 +92,14 @@ public class UsuarioService {
         Usuario usuario = getUsuarioById(id);
         usuario.setActivo(false);
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public MessageResponse cambiarPassword(Long id, ChangePasswordRequest request) {
+        Usuario usuario = getUsuarioById(id);
+        usuario.setPassword(passwordEncoder.encode(request.nuevaPassword()));
+        usuarioRepository.save(usuario);
+        return new MessageResponse("Contraseña actualizada correctamente");
     }
 
     private Usuario getUsuarioById(Long id) {

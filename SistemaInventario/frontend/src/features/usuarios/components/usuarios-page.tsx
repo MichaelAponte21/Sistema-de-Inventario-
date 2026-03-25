@@ -1,12 +1,11 @@
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
 
 import { usuariosApi } from "../api/usuarios-api"
 import { UsuarioEditDialog } from "./usuario-edit-dialog"
 import { UsuarioCreateDialog } from "./usuario-create-dialog"
+import { UsuarioChangePasswordDialog } from "./usuario-change-password-dialog"
 import type { UsuarioResponse } from "@/shared/types"
-import type { ApiError } from "@/shared/api"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
@@ -20,22 +19,13 @@ import {
 } from "@/shared/components/ui/table"
 
 export function UsuariosPage() {
-  const queryClient = useQueryClient()
   const [editing, setEditing] = useState<UsuarioResponse | null>(null)
   const [creating, setCreating] = useState(false)
+  const [changingPassword, setChangingPassword] = useState<UsuarioResponse | null>(null)
 
   const { data: usuarios = [], isLoading } = useQuery({
     queryKey: ["usuarios"],
     queryFn: usuariosApi.listar,
-  })
-
-  const desactivarMutation = useMutation({
-    mutationFn: usuariosApi.desactivar,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["usuarios"] })
-      toast.success("Usuario desactivado")
-    },
-    onError: (err: ApiError) => toast.error(err.message),
   })
 
   const formatDate = (iso: string) =>
@@ -90,16 +80,9 @@ export function UsuariosPage() {
                         <Button size="sm" variant="outline" onClick={() => setEditing(u)}>
                           Editar
                         </Button>
-                        {u.activo && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            disabled={desactivarMutation.isPending}
-                            onClick={() => desactivarMutation.mutate(u.id)}
-                          >
-                            Desactivar
-                          </Button>
-                        )}
+                        <Button size="sm" variant="secondary" onClick={() => setChangingPassword(u)}>
+                          Cambiar Contraseña
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -119,6 +102,12 @@ export function UsuariosPage() {
       <UsuarioCreateDialog
         open={creating}
         onOpenChange={setCreating}
+      />
+
+      <UsuarioChangePasswordDialog
+        open={!!changingPassword}
+        onOpenChange={(open) => { if (!open) setChangingPassword(null) }}
+        usuario={changingPassword}
       />
     </div>
   )

@@ -112,3 +112,7 @@ export interface UsuarioCreateRequest {
   password: string
   rol: RoleName
 }
+
+export interface ChangePasswordRequest {
+  nuevaPassword: string
+}

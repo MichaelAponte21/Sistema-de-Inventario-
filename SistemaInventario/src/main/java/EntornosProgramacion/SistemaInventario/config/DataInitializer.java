@@ -6,11 +6,13 @@ import EntornosProgramacion.SistemaInventario.model.Usuario;
 import EntornosProgramacion.SistemaInventario.repository.RolRepository;
 import EntornosProgramacion.SistemaInventario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
@@ -55,6 +57,7 @@ public class DataInitializer implements CommandLineRunner {
                 .rol(adminRole)
                 .build();
             usuarioRepository.save(admin);
+            log.info("Admin user created: {}", normalizedAdminEmail);
             return;
         }
 
@@ -70,8 +73,14 @@ public class DataInitializer implements CommandLineRunner {
             needsUpdate = true;
         }
 
+        if (!passwordEncoder.matches(adminPassword, adminUser.getPassword())) {
+            adminUser.setPassword(passwordEncoder.encode(adminPassword));
+            needsUpdate = true;
+        }
+
         if (needsUpdate) {
             usuarioRepository.save(adminUser);
+            log.info("Admin user updated: {}", normalizedAdminEmail);
         }
     }
 

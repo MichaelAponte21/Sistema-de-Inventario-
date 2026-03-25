@@ -3,6 +3,7 @@ import type {
   UsuarioResponse,
   UsuarioUpdateRequest,
   UsuarioCreateRequest,
+  ChangePasswordRequest,
   MessageResponse,
 } from "@/shared/types"
 
@@ -17,4 +18,8 @@ export const usuariosApi = {
     apiClient.put<UsuarioResponse>(`/usuarios/${id}`, data).then((r) => r.data),
   desactivar: (id: number) =>
     apiClient.delete<MessageResponse>(`/usuarios/${id}`).then((r) => r.data),
+  activar: (id: number) =>
+    apiClient.put<UsuarioResponse>(`/usuarios/${id}`, { activo: true }).then((r) => r.data),
+  cambiarPassword: (id: number, data: ChangePasswordRequest) =>
+    apiClient.put<MessageResponse>(`/usuarios/${id}/password`, data).then((r) => r.data),
 }

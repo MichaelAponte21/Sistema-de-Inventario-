@@ -1,5 +1,6 @@
 package EntornosProgramacion.SistemaInventario.controller;
 
+import EntornosProgramacion.SistemaInventario.dto.request.ChangePasswordRequest;
 import EntornosProgramacion.SistemaInventario.dto.request.UsuarioCreateRequest;
 import EntornosProgramacion.SistemaInventario.dto.request.UsuarioUpdateRequest;
 import EntornosProgramacion.SistemaInventario.dto.response.MessageResponse;
@@ -49,6 +50,14 @@ public class UsuarioController {
         @Valid @RequestBody UsuarioUpdateRequest request
     ) {
         return ResponseEntity.ok(usuarioService.actualizar(id, request));
+    }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<MessageResponse> cambiarPassword(
+        @PathVariable Long id,
+        @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        return ResponseEntity.ok(usuarioService.cambiarPassword(id, request));
     }
 
     @DeleteMapping("/{id}")

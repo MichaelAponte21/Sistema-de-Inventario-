@@ -110,6 +110,21 @@ export function UsuarioEditDialog({ open, onOpenChange, usuario }: Props) {
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label>Estado</Label>
+            <Select
+              value={watch("activo") ? "true" : "false"}
+              onValueChange={(v) => setValue("activo", v === "true")}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="true">Activo</SelectItem>
+                <SelectItem value="false">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar

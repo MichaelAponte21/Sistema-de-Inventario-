@@ -25,8 +25,8 @@ apiClient.interceptors.response.use(
       const data = error.response.data as ApiErrorResponse | undefined
       const status = error.response.status
 
-      // Auto-logout on 401
-      if (status === 401) {
+      // Auto-logout on 401 (skip if on login page – user just entered wrong credentials)
+      if (status === 401 && !error.config?.url?.includes("/auth/login")) {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         window.location.href = "/login"
