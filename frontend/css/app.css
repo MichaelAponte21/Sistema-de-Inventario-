@@ -1,0 +1,138 @@
+:root {
+  --app-primary: #0d6efd;
+  --app-secondary: #0b7285;
+  --app-success: #198754;
+  --app-warning: #ffc107;
+  --app-danger: #dc3545;
+  --app-surface: #ffffff;
+  --app-surface-alt: #f8f9fa;
+  --app-border: #dee2e6;
+  --app-text: #212529;
+  --app-muted: #6c757d;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--app-text);
+  background:
+    radial-gradient(circle at top right, rgba(13, 110, 253, 0.08), transparent 24%),
+    linear-gradient(180deg, #f8fbff 0%, #f4f6f8 100%);
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-main {
+  padding-bottom: 3rem;
+}
+
+.page-section {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(222, 226, 230, 0.8);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.06);
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin-bottom: 0.25rem;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+.kpi-card {
+  height: 100%;
+  border: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 0.75rem 1.5rem rgba(15, 23, 42, 0.06);
+}
+
+.kpi-card__label {
+  color: var(--app-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kpi-card__value {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, var(--app-primary), var(--app-secondary));
+  color: #fff;
+  font-weight: 700;
+}
+
+.auth-page {
+  min-height: 100vh;
+}
+
+.auth-card {
+  max-width: 460px;
+  width: 100%;
+  border: 0;
+  border-radius: 1.25rem;
+  box-shadow: 0 1.5rem 3rem rgba(15, 23, 42, 0.12);
+}
+
+.table-panel .table {
+  margin-bottom: 0;
+}
+
+.empty-state {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--app-muted);
+}
+
+.empty-state i {
+  font-size: 2rem;
+}
+
+.placeholder-panel {
+  border: 2px dashed rgba(13, 110, 253, 0.2);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.table-responsive {
+  border-radius: 0.75rem;
+}
+
+.toast-container {
+  z-index: 1085;
+}
+
+@media print {
+  #navbar-container,
+  .page-header,
+  .btn,
+  .toast-container {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .page-section {
+    box-shadow: none;
+    border: 0;
+  }
+}
