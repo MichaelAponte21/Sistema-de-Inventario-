@@ -1,23 +1,32 @@
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: dockerfile
-    container_name: inventario-app
+    container_name: inventario-backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    env_file:
-      - .env
     environment:
-      DB_URL: jdbc:postgresql://host.docker.internal:7000/sistema_inventario
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
-      APP_SEED_ADMIN: ${APP_SEED_ADMIN}
-      APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL}
-      APP_SEED_ADMIN_PASSWORD: ${APP_SEED_ADMIN_PASSWORD}
-      APP_SEED_ADMIN_NOMBRE: ${APP_SEED_ADMIN_NOMBRE}
+      DB_URL: ${DB_URL:?Debes definir DB_URL apuntando a tu base local}
+      DB_USERNAME: ${DB_USERNAME:?Debes definir DB_USERNAME de tu base local}
+      DB_PASSWORD: ${DB_PASSWORD:?Debes definir DB_PASSWORD de tu base local}
+      JWT_SECRET: ${JWT_SECRET:-VGhpc0lzQVNlY3JldEtleUZvckRldk9ubHlfQ2hhbmdlSW5Qcm9k}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      APP_SEED_ADMIN: ${APP_SEED_ADMIN:-true}
+      APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL:-admin@inventario.com}
+      APP_SEED_ADMIN_PASSWORD: ${APP_SEED_ADMIN_PASSWORD:-Admin123}
+      APP_SEED_ADMIN_NOMBRE: ${APP_SEED_ADMIN_NOMBRE:-Administrador}
     ports:
       - "8080:8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: inventario-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"
     restart: unless-stopped
