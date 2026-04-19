@@ -85,6 +85,24 @@ spring.datasource.password=${DB_PASSWORD:Admin}
 
 Ajusta estas variables si tu instancia de PostgreSQL usa otro host, puerto, nombre de base o credenciales.
 
+## Carga de Base de Datos
+
+Para ejecutar el programa correctamente, es necesario cargar el archivo `DB inventario` en tu sistema de base de datos PostgreSQL. Este archivo contiene la estructura y los datos iniciales necesarios.
+
+**Pasos para cargar la base de datos:**
+
+1. Asegúrate de tener PostgreSQL instalado y en ejecución.
+2. Utiliza una herramienta de administración de PostgreSQL (como pgAdmin, DBeaver o la línea de comandos `psql`) para conectarte a tu servidor PostgreSQL.
+3. Restaura el archivo `DB inventario` en tu base de datos `sistema_inventario` (o el nombre de base de datos que hayas configurado en `application.properties`).
+
+   **Ejemplo usando `psql` (desde la terminal en la carpeta donde está `DB inventario`):**
+   ```bash
+   psql -U postgres -d sistema_inventario -f "DB inventario"
+   ```
+   (Reemplaza `postgres` con tu usuario de PostgreSQL si es diferente).
+
+Una vez que la base de datos haya sido cargada, puedes proceder con la ejecución del backend y el frontend.
+
 ## Endpoints principales
 
 - `POST /api/auth/login` - inicio de sesión
