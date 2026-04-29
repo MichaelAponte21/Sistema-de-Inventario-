@@ -1,8 +1,6 @@
 package EntornosProgramacion.SistemaInventario.config;
 
-import EntornosProgramacion.SistemaInventario.security.CustomUserDetailsService;
-import EntornosProgramacion.SistemaInventario.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,6 +22,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import EntornosProgramacion.SistemaInventario.security.CustomUserDetailsService;
+import EntornosProgramacion.SistemaInventario.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -32,6 +34,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
+
+    @Value("${app.cors.origin:http://localhost:8081,http://frontend:8081}")
+    private String corsOrigin;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -78,10 +83,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("*");
+        
+        // Parse comma-separated origins from environment variable
+        String[] allowedOrigins = corsOrigin.split(",");
+        for (String origin : allowedOrigins) {
+            config.addAllowedOrigin(origin.trim());
+        }
+        
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

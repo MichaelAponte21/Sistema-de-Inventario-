@@ -1,0 +1,29 @@
+# Build stage
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+COPY frontend/package.json frontend/package-lock.json ./
+
+# Install dependencies (npm ci instala exactamente las versiones del lock file)
+RUN npm ci --include=dev
+
+COPY frontend/ ./
+
+ENV VITE_API_URL=http://backend:8080
+ENV NODE_ENV=production
+
+RUN npx vite build
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN npm install -g serve
+
+COPY --from=build /app/dist ./dist
+
+EXPOSE 8081
+
+CMD ["serve", "-s", "dist", "-l", "8081"]
