@@ -13,7 +13,7 @@ export interface AuthResponse {
 }
 
 export interface UsuarioResponse {
-  id: number
+  id: string
   nombre: string
   email: string
   rol: string
@@ -22,13 +22,13 @@ export interface UsuarioResponse {
 }
 
 export interface ProductoResponse {
-  id: number
+  id: string
   nombre: string
   descripcion: string | null
   precio: number
   stock: number
   stockMinimo: number
-  categoriaId: number
+  categoriaId: string
   categoriaNombre: string
   fechaCreacion: string
   fechaActualizacion: string
@@ -36,20 +36,20 @@ export interface ProductoResponse {
 }
 
 export interface CategoriaResponse {
-  id: number
+  id: string
   nombre: string
   descripcion: string | null
 }
 
 export interface MovimientoResponse {
-  id: number
+  id: string
   tipo: string
   cantidad: number
   fecha: string
   observacion: string | null
-  productoId: number
+  productoId: string
   productoNombre: string
-  usuarioId: number
+  usuarioId: string
   usuarioEmail: string
 }
 
@@ -84,7 +84,7 @@ export interface ProductoRequest {
   precio: number
   stock: number
   stockMinimo: number
-  categoriaId: number
+  categoriaId: string
 }
 
 export interface CategoriaRequest {
@@ -96,7 +96,7 @@ export interface MovimientoRequest {
   tipo: TipoMovimiento
   cantidad: number
   observacion?: string
-  productoId: number
+  productoId: string
 }
 
 export interface UsuarioUpdateRequest {

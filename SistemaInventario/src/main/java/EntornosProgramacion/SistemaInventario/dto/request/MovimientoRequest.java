@@ -17,6 +17,6 @@ public record MovimientoRequest(
     String observacion,
 
     @NotNull(message = "El producto es obligatorio")
-    Long productoId
+    String productoId
 ) {
 }

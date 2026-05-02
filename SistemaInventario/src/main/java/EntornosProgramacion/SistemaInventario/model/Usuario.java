@@ -1,17 +1,9 @@
 package EntornosProgramacion.SistemaInventario.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,8 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Entity
-@Table(name = "usuario")
+@Document(collection = "usuario")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,35 +26,27 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class Usuario implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false, length = 100)
     private String nombre;
 
-    @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(nullable = false, length = 255)
     @JsonIgnore
     private String password;
 
-    @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;
 
-    @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rol_id", nullable = false)
+    @DBRef
     private Rol rol;
 
-    @OneToMany(mappedBy = "usuario")
+    @DBRef
     @Builder.Default
     private List<MovimientoInventario> movimientos = new ArrayList<>();
 
-    @PrePersist
     void prePersist() {
         if (fechaCreacion == null) {
             fechaCreacion = LocalDateTime.now();

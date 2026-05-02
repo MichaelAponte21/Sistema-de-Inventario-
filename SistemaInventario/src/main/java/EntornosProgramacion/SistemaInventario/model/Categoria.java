@@ -1,10 +1,8 @@
 package EntornosProgramacion.SistemaInventario.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -13,8 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "categoria")
+@Document(collection = "categoria")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,15 +20,13 @@ import lombok.Setter;
 public class Categoria {
 
     @Id
-    private Long id;
+    private String id;
 
-    @Column(nullable = false, unique = true, length = 100)
     private String nombre;
 
-    @Column(length = 255)
     private String descripcion;
 
-    @OneToMany(mappedBy = "categoria")
+    @DBRef
     @Builder.Default
     private List<Producto> productos = new ArrayList<>();
 }

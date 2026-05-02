@@ -1,21 +1,14 @@
 package EntornosProgramacion.SistemaInventario.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "rol")
+@Document(collection = "rol")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,10 +17,7 @@ import lombok.Setter;
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true, length = 50)
     private RoleName nombre;
 }

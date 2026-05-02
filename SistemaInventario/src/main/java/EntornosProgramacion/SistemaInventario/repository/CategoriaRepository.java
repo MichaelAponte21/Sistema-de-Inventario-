@@ -1,10 +1,12 @@
 package EntornosProgramacion.SistemaInventario.repository;
 
-import EntornosProgramacion.SistemaInventario.model.Categoria;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import EntornosProgramacion.SistemaInventario.model.Categoria;
+
+public interface CategoriaRepository extends MongoRepository<Categoria, String> {
     Optional<Categoria> findByNombreIgnoreCase(String nombre);
 
     boolean existsByNombreIgnoreCase(String nombre);

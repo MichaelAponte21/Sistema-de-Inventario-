@@ -23,7 +23,7 @@ public class CategoriaService {
     }
 
     @Transactional(readOnly = true)
-    public CategoriaResponse obtenerPorId(Long id) {
+    public CategoriaResponse obtenerPorId(String id) {
         Categoria categoria = getCategoriaById(id);
         return toResponse(categoria);
     }
@@ -41,7 +41,7 @@ public class CategoriaService {
     }
 
     @Transactional
-    public CategoriaResponse actualizar(Long id, CategoriaRequest request) {
+    public CategoriaResponse actualizar(String id, CategoriaRequest request) {
         Categoria categoria = getCategoriaById(id);
         String nombreNormalizado = request.nombre().trim();
 
@@ -59,7 +59,7 @@ public class CategoriaService {
     }
 
     @Transactional
-    public void eliminar(Long id) {
+    public void eliminar(String id) {
         Categoria categoria = getCategoriaById(id);
         if (!categoria.getProductos().isEmpty()) {
             throw new BusinessException("No se puede eliminar una categoria con productos asociados");
@@ -67,7 +67,7 @@ public class CategoriaService {
         categoriaRepository.delete(categoria);
     }
 
-    private Categoria getCategoriaById(Long id) {
+    private Categoria getCategoriaById(String id) {
         return categoriaRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con id: " + id));

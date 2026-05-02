@@ -53,12 +53,12 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public UsuarioResponse obtenerPorId(Long id) {
+    public UsuarioResponse obtenerPorId(String id) {
         return toResponse(getUsuarioById(id));
     }
 
     @Transactional
-    public UsuarioResponse actualizar(Long id, UsuarioUpdateRequest request) {
+    public UsuarioResponse actualizar(String id, UsuarioUpdateRequest request) {
         Usuario usuario = getUsuarioById(id);
 
         if (request.nombre() != null && !request.nombre().isBlank()) {
@@ -88,21 +88,21 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void desactivar(Long id) {
+    public void desactivar(String id) {
         Usuario usuario = getUsuarioById(id);
         usuario.setActivo(false);
         usuarioRepository.save(usuario);
     }
 
     @Transactional
-    public MessageResponse cambiarPassword(Long id, ChangePasswordRequest request) {
+    public MessageResponse cambiarPassword(String id, ChangePasswordRequest request) {
         Usuario usuario = getUsuarioById(id);
         usuario.setPassword(passwordEncoder.encode(request.nuevaPassword()));
         usuarioRepository.save(usuario);
         return new MessageResponse("Contraseña actualizada correctamente");
     }
 
-    private Usuario getUsuarioById(Long id) {
+    private Usuario getUsuarioById(String id) {
         return usuarioRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));

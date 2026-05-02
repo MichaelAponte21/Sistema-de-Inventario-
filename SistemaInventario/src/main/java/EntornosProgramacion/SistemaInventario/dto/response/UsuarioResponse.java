@@ -3,7 +3,7 @@ package EntornosProgramacion.SistemaInventario.dto.response;
 import java.time.LocalDateTime;
 
 public record UsuarioResponse(
-    Long id,
+    String id,
     String nombre,
     String email,
     String rol,

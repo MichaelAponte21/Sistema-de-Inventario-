@@ -1,16 +1,17 @@
 package EntornosProgramacion.SistemaInventario.config;
 
-import EntornosProgramacion.SistemaInventario.model.RoleName;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
 import EntornosProgramacion.SistemaInventario.model.Rol;
+import EntornosProgramacion.SistemaInventario.model.RoleName;
 import EntornosProgramacion.SistemaInventario.model.Usuario;
 import EntornosProgramacion.SistemaInventario.repository.RolRepository;
 import EntornosProgramacion.SistemaInventario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -45,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
 
         String normalizedAdminEmail = adminEmail.trim().toLowerCase();
 
-        Usuario adminUser = usuarioRepository.findByEmailWithRol(normalizedAdminEmail).orElse(null);
+        Usuario adminUser = usuarioRepository.findByEmail(normalizedAdminEmail).orElse(null);
 
         if (adminUser == null) {
             Usuario admin = Usuario

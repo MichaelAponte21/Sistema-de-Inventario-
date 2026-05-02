@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+﻿import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -34,7 +34,7 @@ const schema = z.object({
   precio: z.coerce.number().min(0, "No puede ser negativo"),
   stock: z.coerce.number().int().min(0, "No puede ser negativo"),
   stockMinimo: z.coerce.number().int().min(0, "No puede ser negativo"),
-  categoriaId: z.coerce.number().min(1, "Seleccione una categoría"),
+  categoriaId: z.string().min(1, "Seleccione una categoria"),
 })
 
 type FormData = z.infer<typeof schema>
@@ -82,7 +82,7 @@ export function ProductoFormDialog({ open, onOpenChange, producto }: Props) {
           precio: 0,
           stock: 0,
           stockMinimo: 0,
-          categoriaId: 0,
+          categoriaId: "",
         })
       }
     }
@@ -117,7 +117,7 @@ export function ProductoFormDialog({ open, onOpenChange, producto }: Props) {
             {errors.nombre && <p className="text-sm text-destructive">{errors.nombre.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label>Descripción</Label>
+            <Label>Descripcion</Label>
             <Input {...register("descripcion")} />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -127,10 +127,9 @@ export function ProductoFormDialog({ open, onOpenChange, producto }: Props) {
               {errors.precio && <p className="text-sm text-destructive">{errors.precio.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Categoría</Label>
+              <Label>Categoria</Label>
               <Select
-                value={String(producto?.categoriaId ?? "")}
-                onValueChange={(v) => setValue("categoriaId", Number(v))}
+                onValueChange={(v) => setValue("categoriaId", v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar" />
@@ -153,7 +152,7 @@ export function ProductoFormDialog({ open, onOpenChange, producto }: Props) {
               {errors.stock && <p className="text-sm text-destructive">{errors.stock.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Stock Mínimo</Label>
+              <Label>Stock Minimo</Label>
               <Input type="number" {...register("stockMinimo")} />
               {errors.stockMinimo && <p className="text-sm text-destructive">{errors.stockMinimo.message}</p>}
             </div>

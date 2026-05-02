@@ -40,13 +40,13 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponse> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioResponse> obtenerPorId(@PathVariable String id) {
         return ResponseEntity.ok(usuarioService.obtenerPorId(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> actualizar(
-        @PathVariable Long id,
+        @PathVariable String id,
         @Valid @RequestBody UsuarioUpdateRequest request
     ) {
         return ResponseEntity.ok(usuarioService.actualizar(id, request));
@@ -54,14 +54,14 @@ public class UsuarioController {
 
     @PutMapping("/{id}/password")
     public ResponseEntity<MessageResponse> cambiarPassword(
-        @PathVariable Long id,
+        @PathVariable String id,
         @Valid @RequestBody ChangePasswordRequest request
     ) {
         return ResponseEntity.ok(usuarioService.cambiarPassword(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse> desactivar(@PathVariable Long id) {
+    public ResponseEntity<MessageResponse> desactivar(@PathVariable String id) {
         usuarioService.desactivar(id);
         return ResponseEntity.ok(new MessageResponse("Usuario desactivado correctamente"));
     }

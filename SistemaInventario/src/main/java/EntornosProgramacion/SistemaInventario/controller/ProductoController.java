@@ -1,12 +1,7 @@
 package EntornosProgramacion.SistemaInventario.controller;
 
-import EntornosProgramacion.SistemaInventario.dto.request.ProductoRequest;
-import EntornosProgramacion.SistemaInventario.dto.response.MessageResponse;
-import EntornosProgramacion.SistemaInventario.dto.response.ProductoResponse;
-import EntornosProgramacion.SistemaInventario.service.ProductoService;
-import jakarta.validation.Valid;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +13,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import EntornosProgramacion.SistemaInventario.dto.request.ProductoRequest;
+import EntornosProgramacion.SistemaInventario.dto.response.MessageResponse;
+import EntornosProgramacion.SistemaInventario.dto.response.ProductoResponse;
+import EntornosProgramacion.SistemaInventario.service.ProductoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -32,7 +34,7 @@ public class ProductoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductoResponse> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<ProductoResponse> obtenerPorId(@PathVariable String id) {
         return ResponseEntity.ok(productoService.obtenerPorId(id));
     }
 
@@ -49,13 +51,13 @@ public class ProductoController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductoResponse> actualizar(@PathVariable Long id, @Valid @RequestBody ProductoRequest request) {
+    public ResponseEntity<ProductoResponse> actualizar(@PathVariable String id, @Valid @RequestBody ProductoRequest request) {
         return ResponseEntity.ok(productoService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MessageResponse> eliminar(@PathVariable Long id) {
+    public ResponseEntity<MessageResponse> eliminar(@PathVariable String id) {
         productoService.eliminar(id);
         return ResponseEntity.ok(new MessageResponse("Producto eliminado correctamente"));
     }

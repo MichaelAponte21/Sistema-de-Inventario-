@@ -38,7 +38,7 @@ public class MovimientoController {
     }
 
     @GetMapping("/producto/{id}")
-    public ResponseEntity<List<MovimientoResponse>> listarPorProducto(@PathVariable("id") Long productoId) {
+    public ResponseEntity<List<MovimientoResponse>> listarPorProducto(@PathVariable("id") String productoId) {
         return ResponseEntity.ok(movimientoService.listarPorProducto(productoId));
     }
 }

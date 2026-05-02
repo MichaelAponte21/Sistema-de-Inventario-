@@ -3,14 +3,14 @@ package EntornosProgramacion.SistemaInventario.dto.response;
 import java.time.LocalDateTime;
 
 public record MovimientoResponse(
-    Long id,
+    String id,
     String tipo,
     Integer cantidad,
     LocalDateTime fecha,
     String observacion,
-    Long productoId,
+    String productoId,
     String productoNombre,
-    Long usuarioId,
+    String usuarioId,
     String usuarioEmail
 ) {
 }

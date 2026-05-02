@@ -1,10 +1,12 @@
 package EntornosProgramacion.SistemaInventario.repository;
 
+import java.util.Optional;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+
 import EntornosProgramacion.SistemaInventario.model.Rol;
 import EntornosProgramacion.SistemaInventario.model.RoleName;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RolRepository extends JpaRepository<Rol, Long> {
+public interface RolRepository extends MongoRepository<Rol, String> {
     Optional<Rol> findByNombre(RoleName nombre);
 }

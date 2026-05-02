@@ -1,7 +1,7 @@
 package EntornosProgramacion.SistemaInventario.dto.response;
 
 public record CategoriaResponse(
-    Long id,
+    String id,
     String nombre,
     String descripcion
 ) {

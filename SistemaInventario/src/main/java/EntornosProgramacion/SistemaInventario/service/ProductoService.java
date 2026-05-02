@@ -1,5 +1,11 @@
 package EntornosProgramacion.SistemaInventario.service;
 
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import EntornosProgramacion.SistemaInventario.dto.request.ProductoRequest;
 import EntornosProgramacion.SistemaInventario.dto.response.ProductoResponse;
 import EntornosProgramacion.SistemaInventario.exception.ResourceNotFoundException;
@@ -7,11 +13,7 @@ import EntornosProgramacion.SistemaInventario.model.Categoria;
 import EntornosProgramacion.SistemaInventario.model.Producto;
 import EntornosProgramacion.SistemaInventario.repository.CategoriaRepository;
 import EntornosProgramacion.SistemaInventario.repository.ProductoRepository;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    public ProductoResponse obtenerPorId(Long id) {
+    public ProductoResponse obtenerPorId(String id) {
         return toResponse(getProductoById(id));
     }
 
@@ -53,7 +55,7 @@ public class ProductoService {
     }
 
     @Transactional
-    public ProductoResponse actualizar(Long id, ProductoRequest request) {
+    public ProductoResponse actualizar(String id, ProductoRequest request) {
         Producto producto = getProductoById(id);
         Categoria categoria = getCategoriaById(request.categoriaId());
 
@@ -68,18 +70,18 @@ public class ProductoService {
     }
 
     @Transactional
-    public void eliminar(Long id) {
+    public void eliminar(String id) {
         Producto producto = getProductoById(id);
         productoRepository.delete(producto);
     }
 
-    private Producto getProductoById(Long id) {
+    private Producto getProductoById(String id) {
         return productoRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con id: " + id));
     }
 
-    private Categoria getCategoriaById(Long id) {
+    private Categoria getCategoriaById(String id) {
         return categoriaRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con id: " + id));

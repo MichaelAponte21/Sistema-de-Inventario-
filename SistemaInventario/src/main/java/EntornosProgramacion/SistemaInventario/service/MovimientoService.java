@@ -68,7 +68,7 @@ public class MovimientoService {
     }
 
     @Transactional(readOnly = true)
-    public List<MovimientoResponse> listarPorProducto(Long productoId) {
+    public List<MovimientoResponse> listarPorProducto(String productoId) {
         return movimientoRepository.findByProductoId(productoId).stream().map(this::toResponse).toList();
     }
 

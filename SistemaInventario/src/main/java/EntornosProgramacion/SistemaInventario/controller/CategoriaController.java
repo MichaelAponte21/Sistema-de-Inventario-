@@ -32,7 +32,7 @@ public class CategoriaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoriaResponse> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<CategoriaResponse> obtenerPorId(@PathVariable String id) {
         return ResponseEntity.ok(categoriaService.obtenerPorId(id));
     }
 
@@ -44,13 +44,13 @@ public class CategoriaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoriaResponse> actualizar(@PathVariable Long id, @Valid @RequestBody CategoriaRequest request) {
+    public ResponseEntity<CategoriaResponse> actualizar(@PathVariable String id, @Valid @RequestBody CategoriaRequest request) {
         return ResponseEntity.ok(categoriaService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MessageResponse> eliminar(@PathVariable Long id) {
+    public ResponseEntity<MessageResponse> eliminar(@PathVariable String id) {
         categoriaService.eliminar(id);
         return ResponseEntity.ok(new MessageResponse("Categoria eliminada correctamente"));
     }

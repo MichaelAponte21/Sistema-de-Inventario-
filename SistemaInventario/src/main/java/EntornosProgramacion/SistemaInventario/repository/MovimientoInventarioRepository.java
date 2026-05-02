@@ -1,14 +1,16 @@
 package EntornosProgramacion.SistemaInventario.repository;
 
-import EntornosProgramacion.SistemaInventario.model.MovimientoInventario;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MovimientoInventarioRepository extends JpaRepository<MovimientoInventario, Long> {
-    List<MovimientoInventario> findByProductoId(Long productoId);
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-    List<MovimientoInventario> findByUsuarioId(Long usuarioId);
+import EntornosProgramacion.SistemaInventario.model.MovimientoInventario;
+
+public interface MovimientoInventarioRepository extends MongoRepository<MovimientoInventario, String> {
+    List<MovimientoInventario> findByProductoId(String productoId);
+
+    List<MovimientoInventario> findByUsuarioId(String usuarioId);
 
     List<MovimientoInventario> findByFechaBetween(LocalDateTime inicio, LocalDateTime fin);
 }
