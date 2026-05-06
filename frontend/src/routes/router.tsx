@@ -7,6 +7,8 @@ import { ProductosPage } from "@/features/productos/components/productos-page"
 import { CategoriasPage } from "@/features/categorias/components/categorias-page"
 import { MovimientosPage } from "@/features/movimientos/components/movimientos-page"
 import { UsuariosPage } from "@/features/usuarios/components/usuarios-page"
+import { CarritoPage } from "@/features/carrito/components/carrito-page"
+import { ArqueoCajaPage } from "@/features/arqueo/components/arqueo-caja-page"
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +25,8 @@ export const router = createBrowserRouter([
           { path: "productos", element: <ProductosPage /> },
           { path: "categorias", element: <CategoriasPage /> },
           { path: "movimientos", element: <MovimientosPage /> },
+          { path: "carrito", element: <CarritoPage /> },
+          { path: "arqueo", element: <ArqueoCajaPage /> },
           {
             element: <RoleRoute allowed={["ADMIN"]} />,
             children: [{ path: "usuarios", element: <UsuariosPage /> }],

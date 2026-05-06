@@ -5,6 +5,8 @@ import {
   Tags,
   ArrowLeftRight,
   Users,
+  ShoppingCart,
+  Calculator,
 } from "lucide-react"
 import { cn } from "@/shared/lib/utils"
 import { useAuthStore } from "@/features/auth/store"
@@ -14,6 +16,8 @@ const baseLinks = [
   { to: "/productos", icon: Package, label: "Productos" },
   { to: "/categorias", icon: Tags, label: "Categorías" },
   { to: "/movimientos", icon: ArrowLeftRight, label: "Movimientos" },
+  { to: "/carrito", icon: ShoppingCart, label: "Punto de Venta" },
+  { to: "/arqueo", icon: Calculator, label: "Arqueo de Caja" },
 ]
 
 const adminLinks = [{ to: "/usuarios", icon: Users, label: "Usuarios" }]
