@@ -1,5 +1,5 @@
 # Sistema de Inventario Web con Autenticación
-## Informe Sprint 2 — Nuevas Funcionalidades del Frontend
+## Informe Sprint 2 — Nuevas Funcionalidades del Frontend y Backend
 
 **Universidad Industrial de Santander**  
 Escuela de Ingeniería de Sistemas e Informática  
@@ -15,32 +15,39 @@ Entornos de Programación F-1
 
 ## 1. Introducción
 
-En este documento se describen las funcionalidades desarrolladas durante el Sprint 2 del proyecto **Sistema de Inventario Web**. Las mejoras se implementaron sobre la rama `Mike` del repositorio y se enfocaron exclusivamente en el **frontend** (React + TypeScript), aprovechando los endpoints del backend ya existentes sin necesidad de modificar la base de datos ni el servidor.
+En este documento se describen las funcionalidades desarrolladas durante el Sprint 2 del proyecto **Sistema de Inventario Web**. Las mejoras se implementaron sobre la rama `Mike` del repositorio e incluyeron cambios tanto en el **frontend** (React + TypeScript) como en el **backend** (Spring Boot), además de la actualización del esquema de base de datos y la corrección de la conexión con Docker.
 
-Las tres funcionalidades desarrolladas son:
+Las funcionalidades desarrolladas son:
 
 1. **Carrito de compras / Punto de Venta**
 2. **Mejora en el registro y visualización de movimientos**
 3. **Sección de Arqueo de Caja**
+4. **Implementación de la lógica en el backend (ventas y arqueo)**
+5. **Corrección de la conexión base de datos con Docker**
 
 ---
 
 ## 2. Tecnologías Utilizadas
 
-Las nuevas funcionalidades se construyeron usando las mismas tecnologías del proyecto existente:
-
+**Frontend:**
 - **React 18** con **TypeScript** para los componentes de interfaz
-- **Zustand** para manejo de estado global del carrito (ya estaba en las dependencias)
+- **Zustand** para manejo de estado global del carrito
 - **TanStack Query (React Query)** para consumo de la API REST
 - **Tailwind CSS** + componentes **shadcn/ui** para los estilos
 - **Zod** para validación de formularios
 - **Lucide React** para los íconos
 
+**Backend:**
+- **Spring Boot 3.5** con **Spring Data JPA**
+- **Spring Security + JWT** para autenticación
+- **PostgreSQL** como base de datos
+- **Docker + Docker Compose** para contenedores
+
 ---
 
 ## 3. Archivos Modificados y Creados
 
-### Archivos nuevos
+### Frontend — Archivos nuevos
 
 | Archivo | Descripción |
 |---|---|
@@ -48,7 +55,7 @@ Las nuevas funcionalidades se construyeron usando las mismas tecnologías del pr
 | `frontend/src/features/carrito/components/carrito-page.tsx` | Página del Punto de Venta |
 | `frontend/src/features/arqueo/components/arqueo-caja-page.tsx` | Página de Arqueo de Caja |
 
-### Archivos modificados
+### Frontend — Archivos modificados
 
 | Archivo | Cambio realizado |
 |---|---|
@@ -56,17 +63,45 @@ Las nuevas funcionalidades se construyeron usando las mismas tecnologías del pr
 | `frontend/src/routes/router.tsx` | Nuevas rutas `/carrito` y `/arqueo` |
 | `frontend/src/layouts/sidebar.tsx` | Nuevos ítems en el menú lateral |
 
+### Backend — Archivos nuevos
+
+| Archivo | Descripción |
+|---|---|
+| `model/Venta.java` | Entidad JPA de la tabla `venta` |
+| `model/DetalleVenta.java` | Entidad JPA de la tabla `detalle_venta` |
+| `model/ArqueoCaja.java` | Entidad JPA de la tabla `arqueo_caja` |
+| `repository/VentaRepository.java` | Acceso a datos de ventas |
+| `repository/ArqueoCajaRepository.java` | Acceso a datos de arqueos |
+| `service/VentaService.java` | Lógica de procesamiento de ventas |
+| `service/ArqueoCajaService.java` | Lógica de apertura y cierre de arqueos |
+| `controller/VentaController.java` | Endpoints REST `/api/ventas` |
+| `controller/ArqueoCajaController.java` | Endpoints REST `/api/arqueos` |
+| `dto/request/VentaRequest.java` | DTO entrada para ventas |
+| `dto/request/AbrirArqueoRequest.java` | DTO entrada para abrir arqueo |
+| `dto/request/CerrarArqueoRequest.java` | DTO entrada para cerrar arqueo |
+| `dto/response/VentaResponse.java` | DTO salida de ventas |
+| `dto/response/ArqueoCajaResponse.java` | DTO salida de arqueos |
+
+### Infraestructura — Archivos modificados
+
+| Archivo | Cambio realizado |
+|---|---|
+| `docker-compose.yml` | Agregado `healthcheck` en el servicio `db` para que el backend espere a que PostgreSQL esté listo antes de arrancar |
+| `docs/init_database.sql` | Script SQL completo con todas las tablas incluyendo las nuevas |
+
 ---
 
 ## 4. Funcionalidad 1 — Carrito de Compras (Punto de Venta)
 
 ### 4.1 Descripción
 
-Se creó un módulo de **Punto de Venta** que permite a los usuarios seleccionar productos del inventario, agregarlos a un carrito y procesar la venta. Al confirmar la venta, el sistema registra automáticamente las salidas de inventario mediante el endpoint `/api/movimientos` ya existente.
+Se creó un módulo de **Punto de Venta** que permite seleccionar productos del inventario, agregarlos a un carrito y procesar la venta. Al confirmar, el sistema crea un registro en la tabla `venta` con sus detalles, descuenta el stock de cada producto y registra los movimientos de inventario automáticamente.
 
 ### 4.2 Cómo funciona
 
-El carrito vive en memoria del navegador usando **Zustand**, por lo que no requiere ninguna tabla nueva en la base de datos. Cuando el usuario confirma la venta, se generan múltiples registros de tipo `SALIDA` en la tabla `movimiento_inventario` existente, uno por cada producto del carrito.
+**Frontend:** El carrito vive en memoria del navegador usando Zustand. Al confirmar la venta llama al endpoint `POST /api/ventas`.
+
+**Backend:** El `VentaService` valida el stock de todos los productos antes de modificar nada, calcula el total, crea la venta con sus detalles, descuenta el stock y registra un movimiento de tipo `SALIDA` por cada producto.
 
 ### 4.3 Características implementadas
 
@@ -76,26 +111,17 @@ El carrito vive en memoria del navegador usando **Zustand**, por lo que no requi
 - Panel lateral del carrito con controles para aumentar, disminuir o eliminar ítems
 - Validación que impide agregar más unidades de las disponibles en stock
 - Cálculo del total de la venta en tiempo real (precio × cantidad)
-- Diálogo de confirmación con resumen de la venta y campo de observación opcional
-- Al confirmar, invalida automáticamente el caché de productos y movimientos para reflejar el nuevo stock
+- Diálogo de confirmación con resumen, campo de observación y método de pago
+- Al confirmar, invalida el caché de productos y movimientos para reflejar el nuevo stock
 
-### 4.4 Archivos clave
+### 4.4 Endpoints
 
-**`store.ts`** — Define el estado global del carrito:
-```typescript
-// Acciones disponibles en el store
-addItem(producto, cantidad?)   // Agrega o incrementa un producto
-removeItem(productoId)          // Elimina un producto del carrito
-updateCantidad(productoId, n)   // Actualiza la cantidad directamente
-clearCart()                     // Vacía el carrito
-total()                         // Calcula el total en pesos
-totalItems()                    // Cuenta el total de unidades
 ```
+POST /api/ventas
+Body: { items: [{productoId, cantidad}], montoPagado, metodoPago, arqueoId? }
 
-**Endpoint utilizado:**
-```
-POST /api/movimientos
-Body: { tipo: "SALIDA", productoId, cantidad, observacion }
+GET /api/ventas
+GET /api/ventas/{id}
 ```
 
 ---
@@ -104,7 +130,7 @@ Body: { tipo: "SALIDA", productoId, cantidad, observacion }
 
 ### 5.1 Descripción
 
-La página de movimientos existente solo mostraba una tabla con el historial completo. Se mejoró para incluir filtros interactivos, tarjetas de resumen estadístico y la opción de exportar los datos a CSV.
+La página de movimientos se mejoró para incluir filtros interactivos, tarjetas de resumen estadístico y exportación a CSV.
 
 ### 5.2 Mejoras implementadas
 
@@ -124,9 +150,8 @@ La página de movimientos existente solo mostraba una tabla con el historial com
 - Columnas: Fecha, Tipo, Producto, Cantidad, Usuario, Observación
 
 **Mejoras visuales:**
-- Íconos de tendencia (`↑` verde para entradas, `↓` rojo para salidas) en los badges
+- Íconos de tendencia (`↑` verde para entradas, `↓` rojo para salidas)
 - Botón para limpiar todos los filtros activos
-- Indicador de fecha más legible
 
 ### 5.3 Endpoint utilizado
 
@@ -141,19 +166,19 @@ Todo el filtrado se realiza en el frontend, sin llamadas adicionales al backend.
 
 ### 6.1 Descripción
 
-Se creó una sección dedicada al **arqueo de caja** que permite calcular los ingresos del negocio en un período determinado. Cruza la información de movimientos con los precios de los productos para estimar el dinero generado por ventas.
+Se creó una sección de **arqueo de caja** que permite abrir sesiones de caja, registrar ventas asociadas a ellas y cerrarlas con un monto real para calcular diferencias.
 
 ### 6.2 Cómo funciona
 
-El arqueo toma los movimientos de tipo `SALIDA` del período seleccionado y los valoriza multiplicando la cantidad vendida por el precio actual del producto. Adicionalmente, el usuario puede ingresar el efectivo inicial que había en caja para calcular el efectivo esperado al final del período.
+**Frontend:** Permite seleccionar un período, ingresar el efectivo inicial y ver el resumen calculado de ingresos y efectivo esperado.
 
-> **Nota importante:** El cálculo usa el precio actual del producto. Si el precio fue modificado después de la venta, el valor calculado puede diferir del valor real de la venta original.
+**Backend:** El `ArqueoCajaService` gestiona la apertura y cierre de arqueos. Al cerrar, calcula la diferencia entre el monto esperado y el monto real ingresado. Solo puede haber un arqueo abierto por usuario a la vez.
 
 ### 6.3 Características implementadas
 
 **Controles del período:**
 - Selector de fecha desde / hasta (por defecto muestra el día actual)
-- Campo de efectivo inicial en caja (ingresado manualmente)
+- Campo de efectivo inicial en caja
 
 **Tarjetas de resumen:**
 - Ingresos brutos del período (ventas valoradas)
@@ -166,24 +191,68 @@ El arqueo toma los movimientos de tipo `SALIDA` del período seleccionado y los 
 - Ordenado de mayor a menor ingreso
 - Fila de totales al final
 
-**Tabla de entradas del período:**
-- Registro de todos los ingresos de mercancía recibidos
-
 **Resumen de cierre:**
-- Bloque final con el resumen completo
-- Fecha y hora de generación del arqueo
+- Bloque final con efectivo esperado
+- Fecha y hora de generación
 - Botón de impresión (`window.print()`)
 
-### 6.4 Endpoints utilizados
+### 6.4 Endpoints
 
 ```
-GET /api/movimientos   — para obtener las entradas y salidas del período
-GET /api/productos     — para obtener el precio actual de cada producto
+POST /api/arqueos/abrir        — Abre un arqueo nuevo
+PUT  /api/arqueos/{id}/cerrar  — Cierra el arqueo con monto real
+GET  /api/arqueos              — Historial de arqueos
+GET  /api/arqueos/{id}         — Detalle de un arqueo
+GET  /api/arqueos/abierto      — Arqueo activo del usuario autenticado
 ```
 
 ---
 
-## 7. Cambios en la Navegación
+## 7. Corrección de Conexión Docker con la Base de Datos
+
+### 7.1 Problema
+
+El backend arrancaba antes de que PostgreSQL terminara de inicializarse, causando errores de conexión al levantar los contenedores por primera vez.
+
+### 7.2 Solución
+
+Se agregó un `healthcheck` en el servicio `db` del `docker-compose.yml` y se configuró el backend con `depends_on: condition: service_healthy` para que espere a que la base de datos esté completamente lista:
+
+```yaml
+db:
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres -d sistema_inventario"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
+backend:
+  depends_on:
+    db:
+      condition: service_healthy
+```
+
+---
+
+## 8. Base de Datos — Tablas Nuevas
+
+Se agregaron tres tablas nuevas al esquema. El script completo está en `docs/init_database.sql`.
+
+| Tabla | Descripción |
+|---|---|
+| `venta` | Cabecera de cada venta: total, método de pago, usuario, arqueo asociado |
+| `detalle_venta` | Líneas de la venta: producto, cantidad, precio unitario y subtotal calculado |
+| `arqueo_caja` | Sesiones de caja: montos de apertura, ventas, cierre y diferencia |
+
+### Cómo importar en DBeaver
+
+1. Levantar el contenedor de la BD: `docker compose up -d db`
+2. Conectarse en DBeaver: host `localhost`, puerto `7000`, user `postgres`, password `Admin`
+3. Abrir `docs/init_database.sql` en el SQL Editor y ejecutarlo
+
+---
+
+## 9. Cambios en la Navegación
 
 Se actualizaron el sidebar y el router para incluir los nuevos módulos:
 
@@ -201,17 +270,6 @@ Los nuevos ítems son accesibles para todos los roles (ADMIN y EMPLEADO).
 
 ---
 
-## 8. Impacto en la Base de Datos
+## 10. Conclusión
 
-**Ninguno.** No se crearon tablas nuevas, no se modificaron entidades del backend ni se alteró el esquema de la base de datos. Todas las funcionalidades consumen los endpoints y tablas ya existentes:
-
-| Tabla existente | Uso en las nuevas funcionalidades |
-|---|---|
-| `movimiento_inventario` | Registrar ventas del carrito, consultar arqueo |
-| `producto` | Catálogo del carrito, precio para valorizar arqueo |
-
----
-
-## 9. Conclusión
-
-Las tres funcionalidades desarrolladas en este sprint amplían significativamente las capacidades del sistema de inventario sin romper la compatibilidad con el backend existente. El módulo de Punto de Venta agiliza el proceso de registro de salidas, la mejora de movimientos facilita el análisis del historial y el arqueo de caja proporciona una herramienta básica de control financiero para el negocio.
+Las funcionalidades desarrolladas en este sprint amplían significativamente el sistema de inventario. El backend ahora persiste correctamente las ventas en la base de datos, gestiona el stock de forma transaccional y soporta el ciclo completo de arqueo de caja. La corrección del Docker garantiza que el sistema levante de forma estable en cualquier entorno.
