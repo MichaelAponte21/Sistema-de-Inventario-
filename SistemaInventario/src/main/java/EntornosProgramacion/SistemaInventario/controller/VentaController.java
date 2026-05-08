@@ -34,7 +34,15 @@ public class VentaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VentaResponse> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<VentaResponse> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(ventaService.obtenerPorId(id));
+    }
+
+    @PostMapping("/{id}/anular")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN') or hasAuthority('VENTAS_ANULAR')")
+    public ResponseEntity<VentaResponse> anularVenta(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return ResponseEntity.ok(ventaService.anularVenta(id, authentication.getName()));
     }
 }

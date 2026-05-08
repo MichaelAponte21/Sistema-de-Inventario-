@@ -7,23 +7,43 @@ import {
   Users,
   ShoppingCart,
   Calculator,
+  ReceiptText,
+  ShieldCheck,
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/shared/lib/utils"
 import { useAuthStore } from "@/features/auth/store"
-
-const baseLinks = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/productos", icon: Package, label: "Productos" },
-  { to: "/categorias", icon: Tags, label: "Categorías" },
-  { to: "/movimientos", icon: ArrowLeftRight, label: "Movimientos" },
-  { to: "/carrito", icon: ShoppingCart, label: "Punto de Venta" },
-  { to: "/arqueo", icon: Calculator, label: "Arqueo de Caja" },
-]
-
-const adminLinks = [{ to: "/usuarios", icon: Users, label: "Usuarios" }]
+import { dashboardApi } from "@/features/dashboard/api/dashboard-api"
 
 export function Sidebar() {
   const user = useAuthStore((s) => s.user)
+
+  const { data: stockBajo = [] } = useQuery({
+    queryKey: ["productos", "stock-bajo"],
+    queryFn: dashboardApi.getStockBajo,
+    refetchInterval: 5 * 60 * 1000,
+  })
+
+  const baseLinks = [
+    { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+    {
+      to: "/productos",
+      icon: Package,
+      label: "Productos",
+      badge: stockBajo.length > 0 ? stockBajo.length : undefined,
+    },
+    { to: "/categorias", icon: Tags, label: "Categorias" },
+    { to: "/movimientos", icon: ArrowLeftRight, label: "Movimientos" },
+    { to: "/carrito", icon: ShoppingCart, label: "Punto de Venta" },
+    { to: "/arqueo", icon: Calculator, label: "Arqueo de Caja" },
+    { to: "/ventas", icon: ReceiptText, label: "Historial Ventas" },
+  ]
+
+  const adminLinks = [
+    { to: "/usuarios", icon: Users, label: "Usuarios" },
+    { to: "/permisos", icon: ShieldCheck, label: "Permisos" },
+  ]
+
   const links = user?.rol === "ADMIN" ? [...baseLinks, ...adminLinks] : baseLinks
 
   return (
@@ -33,7 +53,7 @@ export function Sidebar() {
         <span className="text-lg font-bold">Inventario</span>
       </div>
       <nav className="flex flex-col gap-1 p-4">
-        {links.map(({ to, icon: Icon, label }) => (
+        {links.map(({ to, icon: Icon, label, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -45,8 +65,13 @@ export function Sidebar() {
               )
             }
           >
-            <Icon className="h-4 w-4" />
-            {label}
+            <Icon className="h-4 w-4 shrink-0" />
+            <span className="flex-1">{label}</span>
+            {badge !== undefined && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                {badge}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

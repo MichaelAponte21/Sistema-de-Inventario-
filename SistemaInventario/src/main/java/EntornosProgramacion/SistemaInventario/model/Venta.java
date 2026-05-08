@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import EntornosProgramacion.SistemaInventario.model.VentaEstado;
 
 @Entity
 @Table(name = "venta")
@@ -14,7 +15,7 @@ public class Venta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(columnDefinition = "timestamp with time zone DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime fecha;
@@ -45,8 +46,14 @@ public class Venta {
     @Builder.Default
     private List<DetalleVenta> detalles = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private VentaEstado estado = VentaEstado.COMPLETADA;
+
     @PrePersist
     void prePersist() {
         if (fecha == null) fecha = OffsetDateTime.now();
+        if (estado == null) estado = VentaEstado.COMPLETADA;
     }
 }

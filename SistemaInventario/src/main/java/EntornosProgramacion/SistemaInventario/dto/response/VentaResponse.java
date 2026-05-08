@@ -5,19 +5,20 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 public record VentaResponse(
-    Integer id,
+    Long id,
     OffsetDateTime fecha,
     BigDecimal total,
     BigDecimal montoPagado,
     BigDecimal cambio,
     String metodoPago,
+    String estado,
     Long usuarioId,
     String usuarioEmail,
-    Integer arqueoId,
+    Long arqueoId,
     List<DetalleVentaResponse> detalles
 ) {
     public record DetalleVentaResponse(
-        Integer id,
+        Long id,
         Long productoId,
         String productoNombre,
         Integer cantidad,

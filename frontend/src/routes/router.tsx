@@ -9,6 +9,8 @@ import { MovimientosPage } from "@/features/movimientos/components/movimientos-p
 import { UsuariosPage } from "@/features/usuarios/components/usuarios-page"
 import { CarritoPage } from "@/features/carrito/components/carrito-page"
 import { ArqueoCajaPage } from "@/features/arqueo/components/arqueo-caja-page"
+import { HistorialVentasPage } from "@/features/ventas/components/historial-ventas-page"
+import { PermisosPage } from "@/features/permisos/components/permisos-page"
 
 export const router = createBrowserRouter([
   {
@@ -27,9 +29,13 @@ export const router = createBrowserRouter([
           { path: "movimientos", element: <MovimientosPage /> },
           { path: "carrito", element: <CarritoPage /> },
           { path: "arqueo", element: <ArqueoCajaPage /> },
+          { path: "ventas", element: <HistorialVentasPage /> },
           {
             element: <RoleRoute allowed={["ADMIN"]} />,
-            children: [{ path: "usuarios", element: <UsuariosPage /> }],
+            children: [
+              { path: "usuarios", element: <UsuariosPage /> },
+              { path: "permisos", element: <PermisosPage /> },
+            ],
           },
         ],
       },

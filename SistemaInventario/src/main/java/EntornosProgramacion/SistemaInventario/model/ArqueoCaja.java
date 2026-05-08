@@ -14,7 +14,7 @@ public class ArqueoCaja {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "fecha_apertura", columnDefinition = "timestamp with time zone DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime fechaApertura;

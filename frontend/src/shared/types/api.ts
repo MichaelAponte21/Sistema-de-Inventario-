@@ -57,6 +57,51 @@ export interface MessageResponse {
   message: string
 }
 
+export type VentaEstado = "COMPLETADA" | "ANULADA"
+
+export interface VentasStats {
+  total: number
+  count: number
+}
+
+export interface VentaDiaStats {
+  fecha: string
+  total: number
+  count: number
+}
+
+export interface ProductoTopVentas {
+  productoId: number
+  nombre: string
+  unidades: number
+  ingresos: number
+}
+
+export interface ResumenResponse {
+  ventasHoy: VentasStats
+  ventasSemana: VentasStats
+  ventasMes: VentasStats
+  ventasUltimos7Dias: VentaDiaStats[]
+  topProductos: ProductoTopVentas[]
+  productosStockBajo: number
+  diferenciaPromedioArqueos: number
+  ingresosPorMetodo_EFECTIVO: number
+  ingresosPorMetodo_TARJETA: number
+  ingresosPorMetodo_TRANSFERENCIA: number
+}
+
+export interface PermisoResponse {
+  id: number
+  nombre: string
+  descripcion: string
+}
+
+export interface RolConPermisosResponse {
+  id: number
+  nombre: string
+  permisos: PermisoResponse[]
+}
+
 export interface ApiErrorResponse {
   timestamp: string
   status: number

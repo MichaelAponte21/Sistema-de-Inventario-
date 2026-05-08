@@ -31,7 +31,7 @@ public class ArqueoCajaController {
 
     @PutMapping("/{id}/cerrar")
     public ResponseEntity<ArqueoCajaResponse> cerrarArqueo(
-        @PathVariable Integer id,
+        @PathVariable Long id,
         @Valid @RequestBody CerrarArqueoRequest request,
         Authentication authentication
     ) {
@@ -44,7 +44,7 @@ public class ArqueoCajaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ArqueoCajaResponse> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<ArqueoCajaResponse> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(arqueoCajaService.obtenerPorId(id));
     }
 

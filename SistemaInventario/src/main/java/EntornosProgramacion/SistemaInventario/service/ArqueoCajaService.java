@@ -9,8 +9,10 @@ import EntornosProgramacion.SistemaInventario.model.Usuario;
 import EntornosProgramacion.SistemaInventario.repository.ArqueoCajaRepository;
 import EntornosProgramacion.SistemaInventario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import EntornosProgramacion.SistemaInventario.model.RoleName;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -28,13 +30,13 @@ public class ArqueoCajaService {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
             .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        // Verificar que no haya un arqueo abierto para este usuario
         arqueoCajaRepository.findByUsuarioIdAndAbiertoTrue(usuario.getId()).ifPresent(a -> {
             throw new IllegalStateException("Ya existe un arqueo abierto. Ciérrelo antes de abrir uno nuevo.");
         });
 
         ArqueoCaja arqueo = ArqueoCaja.builder()
             .montoInicial(request.montoInicial())
+            .montoVentasEfectivo(BigDecimal.ZERO)
             .montoFinalEsperado(request.montoInicial())
             .observaciones(request.observaciones())
             .usuario(usuario)
@@ -45,12 +47,21 @@ public class ArqueoCajaService {
     }
 
     @Transactional
-    public ArqueoCajaResponse cerrarArqueo(Integer arqueoId, CerrarArqueoRequest request, String userEmail) {
+    public ArqueoCajaResponse cerrarArqueo(Long arqueoId, CerrarArqueoRequest request, String userEmail) {
         ArqueoCaja arqueo = arqueoCajaRepository.findById(arqueoId)
             .orElseThrow(() -> new ResourceNotFoundException("Arqueo no encontrado: " + arqueoId));
 
         if (!arqueo.getAbierto()) {
             throw new IllegalStateException("Este arqueo ya fue cerrado.");
+        }
+
+        // Solo el mismo usuario que abrió puede cerrar (o un admin)
+        Usuario solicitante = usuarioRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        boolean esAdmin = solicitante.getRol() != null &&
+            RoleName.ADMIN.equals(solicitante.getRol().getNombre());
+        if (!arqueo.getUsuario().getEmail().equals(userEmail) && !esAdmin) {
+            throw new AccessDeniedException("Solo el usuario que abrió el arqueo o un administrador puede cerrarlo.");
         }
 
         arqueo.setFechaCierre(OffsetDateTime.now());
@@ -71,7 +82,7 @@ public class ArqueoCajaService {
     }
 
     @Transactional(readOnly = true)
-    public ArqueoCajaResponse obtenerPorId(Integer id) {
+    public ArqueoCajaResponse obtenerPorId(Long id) {
         return toResponse(arqueoCajaRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Arqueo no encontrado: " + id)));
     }

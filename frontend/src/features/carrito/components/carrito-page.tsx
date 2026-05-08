@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Search, Package } from "lucide-react"
+import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Search, Package, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 
 import { productosApi } from "@/features/productos/api/productos-api"
-import { movimientosApi } from "@/features/movimientos/api/movimientos-api"
+import { ventasApi, type MetodoPago } from "@/features/ventas/api/ventas-api"
+import { arqueoApi } from "@/features/arqueo/api/arqueo-api"
 import { useCartStore } from "../store"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
@@ -20,11 +21,20 @@ import {
   DialogFooter,
 } from "@/shared/components/ui/dialog"
 import { Label } from "@/shared/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select"
 
 export function CarritoPage() {
   const [search, setSearch] = useState("")
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [observacion, setObservacion] = useState("")
+  const [metodoPago, setMetodoPago] = useState<MetodoPago>("EFECTIVO")
+  const [montoPagado, setMontoPagado] = useState<string>("")
   const queryClient = useQueryClient()
 
   const { items, addItem, removeItem, updateCantidad, clearCart, total, totalItems } = useCartStore()
@@ -34,6 +44,12 @@ export function CarritoPage() {
     queryFn: productosApi.listar,
   })
 
+  const { data: arqueoAbierto = null } = useQuery({
+    queryKey: ["arqueo", "abierto"],
+    queryFn: arqueoApi.obtenerAbierto,
+    retry: false,
+  })
+
   const productosFiltrados = productos.filter(
     (p) =>
       p.stock > 0 &&
@@ -41,31 +57,47 @@ export function CarritoPage() {
         p.categoriaNombre.toLowerCase().includes(search.toLowerCase()))
   )
 
+  const totalVenta = total()
+  const montoPagadoNum = parseFloat(montoPagado) || 0
+  const cambio = montoPagadoNum - totalVenta
+  const pagoInsuficiente = metodoPago === "EFECTIVO" && montoPagadoNum < totalVenta && montoPagado !== ""
+
   const procesarVentaMutation = useMutation({
-    mutationFn: async () => {
-      const promises = items.map((item) =>
-        movimientosApi.registrar({
-          tipo: "SALIDA",
-          productoId: item.producto.id,
-          cantidad: item.cantidad,
-          observacion: observacion || `Venta carrito - ${new Date().toLocaleDateString("es")}`,
-        })
-      )
-      return Promise.all(promises)
-    },
-    onSuccess: () => {
+    mutationFn: () =>
+      ventasApi.procesarVenta({
+        items: items.map((i) => ({ productoId: i.producto.id, cantidad: i.cantidad })),
+        montoPagado: metodoPago === "EFECTIVO" ? montoPagadoNum : totalVenta,
+        metodoPago,
+        arqueoId: arqueoAbierto?.id,
+      }),
+    onSuccess: (venta) => {
       queryClient.invalidateQueries({ queryKey: ["movimientos"] })
       queryClient.invalidateQueries({ queryKey: ["productos"] })
-      toast.success(`Venta procesada: ${totalItems()} ítem(s) por $${total().toLocaleString("es")}`)
+      queryClient.invalidateQueries({ queryKey: ["ventas"] })
+      queryClient.invalidateQueries({ queryKey: ["arqueo", "abierto"] })
+      const cambioFinal = venta.cambio
+      const msg =
+        metodoPago === "EFECTIVO" && cambioFinal > 0
+          ? `Venta procesada. Cambio: ${formatPrecio(cambioFinal)}`
+          : `Venta procesada: ${totalItems()} ítem(s) por ${formatPrecio(totalVenta)}`
+      toast.success(msg)
       clearCart()
       setObservacion("")
+      setMontoPagado("")
+      setMetodoPago("EFECTIVO")
       setConfirmOpen(false)
     },
-    onError: () => toast.error("Error al procesar la venta"),
+    onError: (err: { message?: string }) =>
+      toast.error(err?.message || "Error al procesar la venta"),
   })
 
   const formatPrecio = (v: number) =>
     v.toLocaleString("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 })
+
+  const handleOpenConfirm = () => {
+    setMontoPagado("")
+    setConfirmOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -143,6 +175,17 @@ export function CarritoPage() {
                 <ShoppingCart className="h-5 w-5" />
                 Carrito
               </CardTitle>
+              {arqueoAbierto ? (
+                <p className="text-xs text-green-600">
+                  Sesión de caja abierta desde{" "}
+                  {new Date(arqueoAbierto.fechaApertura).toLocaleTimeString("es")}
+                </p>
+              ) : (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Sin arqueo activo — la venta no se vinculará a ninguna sesión
+                </p>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               {items.length === 0 ? (
@@ -197,13 +240,13 @@ export function CarritoPage() {
               <CardFooter className="flex-col gap-3 pt-0">
                 <div className="flex w-full items-center justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">{formatPrecio(total())}</span>
+                  <span className="text-primary">{formatPrecio(totalVenta)}</span>
                 </div>
                 <div className="flex w-full gap-2">
                   <Button variant="outline" className="flex-1" onClick={clearCart}>
                     Limpiar
                   </Button>
-                  <Button className="flex-1" onClick={() => setConfirmOpen(true)}>
+                  <Button className="flex-1" onClick={handleOpenConfirm}>
                     Procesar Venta
                   </Button>
                 </div>
@@ -219,11 +262,12 @@ export function CarritoPage() {
           <DialogHeader>
             <DialogTitle>Confirmar Venta</DialogTitle>
             <DialogDescription>
-              Se registrarán {totalItems()} salida(s) de inventario por un total de{" "}
-              {formatPrecio(total())}.
+              {totalItems()} producto(s) — Total: {formatPrecio(totalVenta)}
             </DialogDescription>
           </DialogHeader>
+
           <div className="space-y-3">
+            {/* Detalle de ítems */}
             {items.map((item) => (
               <div key={item.producto.id} className="flex justify-between text-sm">
                 <span>
@@ -237,8 +281,52 @@ export function CarritoPage() {
             <Separator />
             <div className="flex justify-between font-bold">
               <span>Total</span>
-              <span>{formatPrecio(total())}</span>
+              <span>{formatPrecio(totalVenta)}</span>
             </div>
+
+            {/* Método de pago */}
+            <div className="space-y-1">
+              <Label>Método de pago</Label>
+              <Select
+                value={metodoPago}
+                onValueChange={(v) => setMetodoPago(v as MetodoPago)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EFECTIVO">Efectivo</SelectItem>
+                  <SelectItem value="TARJETA">Tarjeta</SelectItem>
+                  <SelectItem value="TRANSFERENCIA">Transferencia</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Monto pagado (solo en efectivo) */}
+            {metodoPago === "EFECTIVO" && (
+              <div className="space-y-1">
+                <Label>Monto recibido</Label>
+                <Input
+                  type="number"
+                  min={totalVenta}
+                  step={1000}
+                  placeholder={`Mínimo ${formatPrecio(totalVenta)}`}
+                  value={montoPagado}
+                  onChange={(e) => setMontoPagado(e.target.value)}
+                />
+                {pagoInsuficiente && (
+                  <p className="text-xs text-destructive">El monto es menor al total.</p>
+                )}
+                {!pagoInsuficiente && montoPagadoNum >= totalVenta && montoPagado !== "" && (
+                  <div className="flex justify-between text-sm font-semibold text-green-600">
+                    <span>Cambio a devolver</span>
+                    <span>{formatPrecio(cambio)}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Observación */}
             <div className="space-y-1">
               <Label>Observación (opcional)</Label>
               <Input
@@ -247,14 +335,28 @@ export function CarritoPage() {
                 onChange={(e) => setObservacion(e.target.value)}
               />
             </div>
+
+            {/* Aviso sin arqueo */}
+            {!arqueoAbierto && (
+              <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>
+                  No hay una sesión de arqueo de caja activa. Esta venta no se asociará a ningún arqueo.
+                </span>
+              </div>
+            )}
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               Cancelar
             </Button>
             <Button
               onClick={() => procesarVentaMutation.mutate()}
-              disabled={procesarVentaMutation.isPending}
+              disabled={
+                procesarVentaMutation.isPending ||
+                (metodoPago === "EFECTIVO" && (montoPagado === "" || pagoInsuficiente))
+              }
             >
               {procesarVentaMutation.isPending ? "Procesando..." : "Confirmar Venta"}
             </Button>

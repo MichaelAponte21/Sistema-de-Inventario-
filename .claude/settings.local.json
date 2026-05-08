@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\MichaelAponte\\\\Documents\\\\Visual\\\\Sistema-de-Inventario-\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\MichaelAponte\\\\Documents\\\\Visual\\\\Sistema-de-Inventario-\" -Recurse -Name)",
+      "PowerShell(ls \"C:\\\\Users\\\\MichaelAponte\\\\Documents\\\\Visual\\\\Sistema-de-Inventario-\" | Where-Object { $_.PSIsContainer } | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\MichaelAponte\\\\Documents\\\\Visual\\\\Sistema-de-Inventario-\" -Recurse -File | Select-Object -First 50 | ForEach-Object { $_.FullName })",
+      "Bash(./mvnw compile *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(docker compose *)",
+      "Bash(docker exec *)",
+      "Bash(curl *)",
+      "Bash(docker cp *)"
+    ]
+  }
+}

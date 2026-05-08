@@ -1,275 +1,336 @@
-# Sistema de Inventario Web con Autenticación
-## Informe Sprint 2 — Nuevas Funcionalidades del Frontend y Backend
+# Sistema de Inventario Web
 
 **Universidad Industrial de Santander**  
-Escuela de Ingeniería de Sistemas e Informática  
-Entornos de Programación F-1
+Escuela de Ingenieria de Sistemas e Informatica — Entornos de Programacion F-1
 
 **Integrantes:**
-- Carlos Adolfo Beltrán Castro
-- Michael Alexander Aponte Rodríguez — 2222954
-- Cristian Camilo Carreño Rey — 2221475
-- Anderson Nicolás Díaz Camacho — 2214105
+- Carlos Adolfo Beltran Castro
+- Michael Alexander Aponte Rodriguez — 2222954
+- Cristian Camilo Carreno Rey — 2221475
+- Anderson Nicolas Diaz Camacho — 2214105
 
 ---
 
-## 1. Introducción
+## Descripcion General
 
-En este documento se describen las funcionalidades desarrolladas durante el Sprint 2 del proyecto **Sistema de Inventario Web**. Las mejoras se implementaron sobre la rama `Mike` del repositorio e incluyeron cambios tanto en el **frontend** (React + TypeScript) como en el **backend** (Spring Boot), además de la actualización del esquema de base de datos y la corrección de la conexión con Docker.
-
-Las funcionalidades desarrolladas son:
-
-1. **Carrito de compras / Punto de Venta**
-2. **Mejora en el registro y visualización de movimientos**
-3. **Sección de Arqueo de Caja**
-4. **Implementación de la lógica en el backend (ventas y arqueo)**
-5. **Corrección de la conexión base de datos con Docker**
+Aplicacion web fullstack para la gestion de inventario, punto de venta y arqueo de caja. Permite registrar productos, procesar ventas, gestionar entradas y salidas de stock, controlar sesiones de caja y visualizar estadisticas clave del negocio.
 
 ---
 
-## 2. Tecnologías Utilizadas
+## Tecnologias
 
-**Frontend:**
-- **React 18** con **TypeScript** para los componentes de interfaz
-- **Zustand** para manejo de estado global del carrito
-- **TanStack Query (React Query)** para consumo de la API REST
-- **Tailwind CSS** + componentes **shadcn/ui** para los estilos
-- **Zod** para validación de formularios
-- **Lucide React** para los íconos
-
-**Backend:**
-- **Spring Boot 3.5** con **Spring Data JPA**
-- **Spring Security + JWT** para autenticación
-- **PostgreSQL** como base de datos
-- **Docker + Docker Compose** para contenedores
+| Capa | Tecnologia |
+|------|-----------|
+| Frontend | React 18 + TypeScript, Vite, Tailwind CSS, shadcn/ui |
+| Estado | Zustand (carrito), TanStack Query (server state) |
+| Backend | Spring Boot 3.5, Spring Data JPA, Spring Security |
+| Autenticacion | JWT Bearer Token |
+| Base de datos | PostgreSQL 16 |
+| Contenedores | Docker + Docker Compose |
+| Charts | Recharts |
 
 ---
 
-## 3. Archivos Modificados y Creados
+## Levantar el sistema
 
-### Frontend — Archivos nuevos
+### Requisitos
+- Docker Desktop instalado y corriendo
 
-| Archivo | Descripción |
-|---|---|
-| `frontend/src/features/carrito/store.ts` | Store global del carrito con Zustand |
-| `frontend/src/features/carrito/components/carrito-page.tsx` | Página del Punto de Venta |
-| `frontend/src/features/arqueo/components/arqueo-caja-page.tsx` | Página de Arqueo de Caja |
+### Comandos
 
-### Frontend — Archivos modificados
+```bash
+# Clonar y levantar
+git clone <repo-url>
+cd Sistema-de-Inventario-
 
-| Archivo | Cambio realizado |
-|---|---|
-| `frontend/src/features/movimientos/components/movimientos-page.tsx` | Filtros, resumen y exportación CSV |
-| `frontend/src/routes/router.tsx` | Nuevas rutas `/carrito` y `/arqueo` |
-| `frontend/src/layouts/sidebar.tsx` | Nuevos ítems en el menú lateral |
+# Crear el archivo .env (copiar desde .env.example si existe)
+# O usar los valores por defecto del docker-compose.yml
 
-### Backend — Archivos nuevos
+docker compose up -d
+```
 
-| Archivo | Descripción |
-|---|---|
-| `model/Venta.java` | Entidad JPA de la tabla `venta` |
-| `model/DetalleVenta.java` | Entidad JPA de la tabla `detalle_venta` |
-| `model/ArqueoCaja.java` | Entidad JPA de la tabla `arqueo_caja` |
-| `repository/VentaRepository.java` | Acceso a datos de ventas |
-| `repository/ArqueoCajaRepository.java` | Acceso a datos de arqueos |
-| `service/VentaService.java` | Lógica de procesamiento de ventas |
-| `service/ArqueoCajaService.java` | Lógica de apertura y cierre de arqueos |
-| `controller/VentaController.java` | Endpoints REST `/api/ventas` |
-| `controller/ArqueoCajaController.java` | Endpoints REST `/api/arqueos` |
-| `dto/request/VentaRequest.java` | DTO entrada para ventas |
-| `dto/request/AbrirArqueoRequest.java` | DTO entrada para abrir arqueo |
-| `dto/request/CerrarArqueoRequest.java` | DTO entrada para cerrar arqueo |
-| `dto/response/VentaResponse.java` | DTO salida de ventas |
-| `dto/response/ArqueoCajaResponse.java` | DTO salida de arqueos |
+### URLs una vez levantado
 
-### Infraestructura — Archivos modificados
+| Servicio | URL |
+|----------|-----|
+| Frontend | http://localhost:8081 |
+| Backend API | http://localhost:8080 |
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+| Base de datos | localhost:7000 (PostgreSQL) |
 
-| Archivo | Cambio realizado |
-|---|---|
-| `docker-compose.yml` | Agregado `healthcheck` en el servicio `db` para que el backend espere a que PostgreSQL esté listo antes de arrancar |
-| `docs/init_database.sql` | Script SQL completo con todas las tablas incluyendo las nuevas |
+### Credenciales por defecto
+- **Admin:** admin@inventario.com / Admin123
+- **Empleado demo:** carlos@inventario.com / Empleado123
 
 ---
 
-## 4. Funcionalidad 1 — Carrito de Compras (Punto de Venta)
+## Datos de prueba
 
-### 4.1 Descripción
+El archivo `docs/seed-data.sql` contiene datos de prueba completos (categorias, productos, movimientos, arqueos y ventas).
 
-Se creó un módulo de **Punto de Venta** que permite seleccionar productos del inventario, agregarlos a un carrito y procesar la venta. Al confirmar, el sistema crea un registro en la tabla `venta` con sus detalles, descuenta el stock de cada producto y registra los movimientos de inventario automáticamente.
+Para cargarlos con los contenedores ya corriendo:
 
-### 4.2 Cómo funciona
+```bash
+docker cp docs/seed-data.sql inventario-db:/seed-data.sql
+docker exec inventario-db psql -U postgres -d sistema_inventario -c "\i /seed-data.sql"
+```
 
-**Frontend:** El carrito vive en memoria del navegador usando Zustand. Al confirmar la venta llama al endpoint `POST /api/ventas`.
+---
 
-**Backend:** El `VentaService` valida el stock de todos los productos antes de modificar nada, calcula el total, crea la venta con sus detalles, descuenta el stock y registra un movimiento de tipo `SALIDA` por cada producto.
+## Funcionalidades
 
-### 4.3 Características implementadas
+### 1. Gestion de Productos y Categorias
 
-- Catálogo de productos con buscador por nombre y categoría
-- Solo muestra productos con stock disponible (`stock > 0`)
-- Indicador visual de stock bajo en los productos
-- Panel lateral del carrito con controles para aumentar, disminuir o eliminar ítems
-- Validación que impide agregar más unidades de las disponibles en stock
-- Cálculo del total de la venta en tiempo real (precio × cantidad)
-- Diálogo de confirmación con resumen, campo de observación y método de pago
-- Al confirmar, invalida el caché de productos y movimientos para reflejar el nuevo stock
+- CRUD completo de productos con nombre, descripcion, precio, stock y stock minimo
+- Organizacion por categorias
+- Indicador visual de stock bajo (cuando `stock <= stock_minimo`)
+- Solo usuarios con rol ADMIN pueden crear, editar o eliminar productos y categorias
 
-### 4.4 Endpoints
+**Endpoints:**
+```
+GET    /api/productos
+GET    /api/productos/{id}
+GET    /api/productos/stock-bajo
+POST   /api/productos       [ADMIN]
+PUT    /api/productos/{id}  [ADMIN]
+DELETE /api/productos/{id}  [ADMIN]
 
+GET    /api/categorias
+POST   /api/categorias      [ADMIN]
+PUT    /api/categorias/{id} [ADMIN]
+DELETE /api/categorias/{id} [ADMIN]
+```
+
+---
+
+### 2. Movimientos de Inventario
+
+- Registro de entradas y salidas de stock con observacion y fecha
+- Tabla con filtros por tipo, producto y rango de fechas
+- Exportacion a CSV de los movimientos filtrados
+- Cada venta genera automaticamente movimientos de tipo SALIDA
+- Cada anulacion de venta genera movimientos de tipo ENTRADA (devolucion)
+
+**Endpoints:**
+```
+GET  /api/movimientos
+POST /api/movimientos
+```
+
+---
+
+### 3. Punto de Venta (Carrito)
+
+- Catalogo de productos con buscador y filtro por categoria
+- Solo muestra productos con stock disponible
+- Carrito con controles de cantidad (tope = stock disponible)
+- Selector de metodo de pago: EFECTIVO / TARJETA / TRANSFERENCIA
+- Para pagos en efectivo: campo de monto recibido y calculo automatico del cambio
+- Aviso cuando no hay arqueo de caja abierto
+- Al confirmar: crea el registro en `venta` y `detalle_venta`, descuenta stock
+
+**Endpoint:**
 ```
 POST /api/ventas
 Body: { items: [{productoId, cantidad}], montoPagado, metodoPago, arqueoId? }
-
-GET /api/ventas
-GET /api/ventas/{id}
 ```
 
 ---
 
-## 5. Funcionalidad 2 — Mejora en el Registro de Movimientos
+### 4. Arqueo de Caja
 
-### 5.1 Descripción
+- Apertura de sesion de caja con monto inicial
+- Solo un arqueo abierto por usuario a la vez (constraint unico en BD)
+- Las ventas en EFECTIVO acumulan automaticamente en `montoVentasEfectivo`
+- Las ventas con TARJETA o TRANSFERENCIA no afectan el efectivo esperado
+- Cierre con monto real y calculo automatico de diferencia (sobrante/faltante)
+- Solo el usuario que abrio el arqueo o un ADMIN puede cerrarlo
+- Historial de todos los arqueos (colapsable)
 
-La página de movimientos se mejoró para incluir filtros interactivos, tarjetas de resumen estadístico y exportación a CSV.
-
-### 5.2 Mejoras implementadas
-
-**Filtros dinámicos:**
-- Por tipo de movimiento: Todos / Entradas / Salidas
-- Por nombre de producto (búsqueda en tiempo real)
-- Por rango de fechas: desde / hasta
-
-**Tarjetas de resumen** (se actualizan según los filtros aplicados):
-- Total de registros en el período
-- Total de unidades ingresadas (entradas)
-- Total de unidades salidas (salidas)
-
-**Exportación a CSV:**
-- Genera un archivo `.csv` con los movimientos filtrados
-- El nombre del archivo incluye la fecha de generación
-- Columnas: Fecha, Tipo, Producto, Cantidad, Usuario, Observación
-
-**Mejoras visuales:**
-- Íconos de tendencia (`↑` verde para entradas, `↓` rojo para salidas)
-- Botón para limpiar todos los filtros activos
-
-### 5.3 Endpoint utilizado
-
+**Endpoints:**
 ```
-GET /api/movimientos
-```
-Todo el filtrado se realiza en el frontend, sin llamadas adicionales al backend.
-
----
-
-## 6. Funcionalidad 3 — Arqueo de Caja
-
-### 6.1 Descripción
-
-Se creó una sección de **arqueo de caja** que permite abrir sesiones de caja, registrar ventas asociadas a ellas y cerrarlas con un monto real para calcular diferencias.
-
-### 6.2 Cómo funciona
-
-**Frontend:** Permite seleccionar un período, ingresar el efectivo inicial y ver el resumen calculado de ingresos y efectivo esperado.
-
-**Backend:** El `ArqueoCajaService` gestiona la apertura y cierre de arqueos. Al cerrar, calcula la diferencia entre el monto esperado y el monto real ingresado. Solo puede haber un arqueo abierto por usuario a la vez.
-
-### 6.3 Características implementadas
-
-**Controles del período:**
-- Selector de fecha desde / hasta (por defecto muestra el día actual)
-- Campo de efectivo inicial en caja
-
-**Tarjetas de resumen:**
-- Ingresos brutos del período (ventas valoradas)
-- Efectivo inicial
-- Efectivo final esperado (inicial + ingresos)
-- Contador de entradas y salidas del período
-
-**Tabla de detalle de ventas por producto:**
-- Precio unitario, unidades vendidas y total por producto
-- Ordenado de mayor a menor ingreso
-- Fila de totales al final
-
-**Resumen de cierre:**
-- Bloque final con efectivo esperado
-- Fecha y hora de generación
-- Botón de impresión (`window.print()`)
-
-### 6.4 Endpoints
-
-```
-POST /api/arqueos/abrir        — Abre un arqueo nuevo
-PUT  /api/arqueos/{id}/cerrar  — Cierra el arqueo con monto real
-GET  /api/arqueos              — Historial de arqueos
-GET  /api/arqueos/{id}         — Detalle de un arqueo
-GET  /api/arqueos/abierto      — Arqueo activo del usuario autenticado
+POST /api/arqueos/abrir
+PUT  /api/arqueos/{id}/cerrar
+GET  /api/arqueos/abierto
+GET  /api/arqueos
+GET  /api/arqueos/{id}
 ```
 
 ---
 
-## 7. Corrección de Conexión Docker con la Base de Datos
+### 5. Historial de Ventas y Anulacion
 
-### 7.1 Problema
+- Tabla con todas las ventas ordenadas por fecha descendente
+- Estado visible: COMPLETADA / ANULADA
+- Detalle expandible de cada venta (productos, cantidades, precios historicos)
+- Anulacion de ventas con confirmacion:
+  - Restaura el stock de todos los productos de la venta
+  - Registra movimientos de ENTRADA por cada item
+  - Si el pago fue en EFECTIVO y el arqueo sigue abierto, ajusta `montoVentasEfectivo`
+- Solo el cajero que hizo la venta o un ADMIN puede anular
 
-El backend arrancaba antes de que PostgreSQL terminara de inicializarse, causando errores de conexión al levantar los contenedores por primera vez.
-
-### 7.2 Solución
-
-Se agregó un `healthcheck` en el servicio `db` del `docker-compose.yml` y se configuró el backend con `depends_on: condition: service_healthy` para que espere a que la base de datos esté completamente lista:
-
-```yaml
-db:
-  healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U postgres -d sistema_inventario"]
-    interval: 10s
-    timeout: 5s
-    retries: 5
-
-backend:
-  depends_on:
-    db:
-      condition: service_healthy
+**Endpoints:**
+```
+GET  /api/ventas
+GET  /api/ventas/{id}
+POST /api/ventas/{id}/anular   [ADMIN o permiso VENTAS_ANULAR]
 ```
 
 ---
 
-## 8. Base de Datos — Tablas Nuevas
+### 6. Dashboard con KPIs
 
-Se agregaron tres tablas nuevas al esquema. El script completo está en `docs/init_database.sql`.
+- Tarjetas de ventas: hoy / esta semana / este mes
+- Grafica de barras: ventas de los ultimos 7 dias
+- Grafica de pastel: distribucion de ingresos por metodo de pago (mes)
+- Tabla de top 5 productos mas vendidos del mes
+- Alertas de stock bajo con banner en toda la aplicacion
+- Badge con contador en el menu lateral de Productos
 
-| Tabla | Descripción |
-|---|---|
-| `venta` | Cabecera de cada venta: total, método de pago, usuario, arqueo asociado |
-| `detalle_venta` | Líneas de la venta: producto, cantidad, precio unitario y subtotal calculado |
-| `arqueo_caja` | Sesiones de caja: montos de apertura, ventas, cierre y diferencia |
-
-### Cómo importar en DBeaver
-
-1. Levantar el contenedor de la BD: `docker compose up -d db`
-2. Conectarse en DBeaver: host `localhost`, puerto `7000`, user `postgres`, password `Admin`
-3. Abrir `docs/init_database.sql` en el SQL Editor y ejecutarlo
+**Endpoint:**
+```
+GET /api/reportes/resumen   [ADMIN o permiso REPORTES_VER]
+```
 
 ---
 
-## 9. Cambios en la Navegación
+### 7. Alertas de Stock Bajo
 
-Se actualizaron el sidebar y el router para incluir los nuevos módulos:
-
-```
-Dashboard
-Productos
-Categorías
-Movimientos
-Punto de Venta       ← nuevo
-Arqueo de Caja       ← nuevo
-Usuarios (solo ADMIN)
-```
-
-Los nuevos ítems son accesibles para todos los roles (ADMIN y EMPLEADO).
+- Tarea programada que se ejecuta todos los dias de lunes a sabado a las 8:00 AM
+- Registra en el log del servidor todos los productos con stock <= stock_minimo
+- Banner persistente en la parte superior de la aplicacion mientras haya alertas
+- Badge con contador rojo en el link "Productos" del sidebar
+- El endpoint `GET /api/productos/stock-bajo` retorna la lista en tiempo real
 
 ---
 
-## 10. Conclusión
+### 8. Gestion de Permisos por Rol
 
-Las funcionalidades desarrolladas en este sprint amplían significativamente el sistema de inventario. El backend ahora persiste correctamente las ventas en la base de datos, gestiona el stock de forma transaccional y soporta el ciclo completo de arqueo de caja. La corrección del Docker garantiza que el sistema levante de forma estable en cualquier entorno.
+El sistema tiene dos roles basicos: **ADMIN** y **EMPLEADO**. Los permisos disponibles son:
+
+| Permiso | Descripcion | ADMIN | EMPLEADO |
+|---------|-------------|-------|----------|
+| PRODUCTOS_CREAR | Crear nuevos productos | Si | No |
+| PRODUCTOS_EDITAR | Editar productos existentes | Si | No |
+| PRODUCTOS_ELIMINAR | Eliminar productos | Si | No |
+| CATEGORIAS_GESTIONAR | CRUD de categorias | Si | No |
+| MOVIMIENTOS_CREAR | Registrar movimientos | Si | Si |
+| VENTAS_ANULAR | Anular ventas completadas | Si | Si |
+| REPORTES_VER | Ver dashboard y reportes | Si | Si |
+| USUARIOS_GESTIONAR | CRUD de usuarios | Si | No |
+
+- Los permisos del rol ADMIN son fijos y no se pueden modificar
+- Un ADMIN puede otorgar o quitar permisos al rol EMPLEADO desde `/permisos`
+- Los permisos se cargan al autenticar y forman parte del contexto de seguridad de Spring
+
+**Endpoints:**
+```
+GET /api/permisos/roles           [ADMIN]
+GET /api/permisos                 [ADMIN]
+PUT /api/permisos/roles/{rolId}   [ADMIN]
+Body: [permisosIds...]
+```
+
+---
+
+### 9. Gestion de Usuarios
+
+- Crear, editar y desactivar usuarios (solo ADMIN)
+- Cambio de contrasena por parte del propio usuario
+- Roles disponibles: ADMIN / EMPLEADO
+
+**Endpoints:**
+```
+GET    /api/usuarios
+POST   /api/usuarios         [ADMIN]
+PUT    /api/usuarios/{id}    [ADMIN]
+DELETE /api/usuarios/{id}    [ADMIN]
+POST   /api/usuarios/{id}/cambiar-password
+```
+
+---
+
+## Estructura del Proyecto
+
+```
+Sistema-de-Inventario-/
+├── SistemaInventario/          # Backend Spring Boot
+│   └── src/main/java/.../
+│       ├── model/              # Entidades JPA
+│       ├── repository/         # Spring Data repositories
+│       ├── service/            # Logica de negocio
+│       ├── controller/         # REST controllers
+│       ├── dto/                # Request y Response DTOs
+│       ├── security/           # JWT filter, UserDetailsService
+│       ├── config/             # SecurityConfig, DataInitializer
+│       └── exception/          # Excepciones y GlobalExceptionHandler
+│
+├── frontend/                   # Frontend React + Vite
+│   └── src/
+│       ├── features/           # Modulos por dominio
+│       │   ├── auth/
+│       │   ├── productos/
+│       │   ├── categorias/
+│       │   ├── movimientos/
+│       │   ├── carrito/
+│       │   ├── arqueo/
+│       │   ├── ventas/
+│       │   ├── dashboard/
+│       │   └── permisos/
+│       ├── layouts/            # Sidebar, Topbar, AppLayout
+│       ├── routes/             # Router y guards
+│       └── shared/             # Componentes UI, tipos, apiClient
+│
+├── docs/                       # Documentacion y scripts
+│   ├── seed-data.sql           # Datos de prueba
+│   ├── sprint2-correcciones.md # Bitacora de correcciones Sprint 2
+│   └── mejoras-futuras.md      # Roadmap de mejoras
+│
+├── docker-compose.yml
+├── dockerfile                  # Backend
+└── Dockerfile.frontend
+```
+
+---
+
+## Variables de Entorno
+
+El archivo `.env` en la raiz debe contener:
+
+```env
+DB_USERNAME=postgres
+DB_PASSWORD=Admin
+JWT_SECRET=<base64-secret>
+JWT_EXPIRATION_MS=86400000
+APP_SEED_ADMIN=true
+APP_SEED_ADMIN_EMAIL=admin@inventario.com
+APP_SEED_ADMIN_PASSWORD=Admin123
+APP_SEED_ADMIN_NOMBRE=Administrador
+```
+
+---
+
+## Esquema de Base de Datos
+
+| Tabla | Descripcion |
+|-------|-------------|
+| `rol` | ADMIN / EMPLEADO |
+| `permiso` | Permisos granulares del sistema |
+| `rol_permiso` | Relacion N:N entre roles y permisos |
+| `usuario` | Usuarios del sistema |
+| `categoria` | Categorias de productos |
+| `producto` | Catalogo de productos con stock |
+| `movimiento_inventario` | Audit trail de cambios de stock |
+| `venta` | Cabecera de cada venta |
+| `detalle_venta` | Lineas de venta (producto, cantidad, precio historico) |
+| `arqueo_caja` | Sesiones de caja con montos y diferencias |
+
+---
+
+## Historial de Cambios
+
+| Sprint | Fecha | Descripcion |
+|--------|-------|-------------|
+| Sprint 1 | 2026-04 | CRUD productos, categorias, movimientos, usuarios, autenticacion JWT |
+| Sprint 2 | 2026-05-08 | Punto de venta, arqueo de caja, correcciones de tipos (integer->bigint), fix VentaService |
+| Mejoras | 2026-05-08 | Dashboard KPIs, alertas stock bajo, permisos granulares, historial ventas con anulacion |

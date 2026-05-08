@@ -76,7 +76,12 @@ public class Usuario implements UserDetails {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + rol.getNombre().name()));
+        List<GrantedAuthority> authorities = new java.util.ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + rol.getNombre().name()));
+        for (Permiso permiso : rol.getPermisos()) {
+            authorities.add(new SimpleGrantedAuthority(permiso.getNombre().name()));
+        }
+        return authorities;
     }
 
     @Override

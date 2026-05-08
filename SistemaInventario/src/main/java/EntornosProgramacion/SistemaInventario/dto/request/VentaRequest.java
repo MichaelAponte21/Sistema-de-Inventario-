@@ -16,7 +16,7 @@ public record VentaRequest(
     @NotBlank
     String metodoPago,
 
-    Integer arqueoId
+    Long arqueoId
 ) {
     public record DetalleVentaRequest(
         @NotNull Long productoId,

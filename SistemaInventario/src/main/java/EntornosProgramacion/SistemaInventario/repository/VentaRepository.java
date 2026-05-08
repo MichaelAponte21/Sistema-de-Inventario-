@@ -7,9 +7,9 @@ import org.springframework.data.repository.query.Param;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-public interface VentaRepository extends JpaRepository<Venta, Integer> {
+public interface VentaRepository extends JpaRepository<Venta, Long> {
 
-    List<Venta> findByArqueoId(Integer arqueoId);
+    List<Venta> findByArqueoId(Long arqueoId);
 
     List<Venta> findByFechaBetweenOrderByFechaDesc(OffsetDateTime desde, OffsetDateTime hasta);
 

@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
     }
 
-    @ExceptionHandler({BusinessException.class, IllegalArgumentException.class})
+    @ExceptionHandler({BusinessException.class, IllegalArgumentException.class, IllegalStateException.class})
     public ResponseEntity<ApiErrorResponse> handleBusiness(RuntimeException ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
