@@ -13,7 +13,8 @@
       "Bash(docker compose *)",
       "Bash(docker exec *)",
       "Bash(curl *)",
-      "Bash(docker cp *)"
+      "Bash(docker cp *)",
+      "PowerShell($fe = Invoke-WebRequest -Uri \"http://localhost:8081\" -UseBasicParsing; \"Frontend HTTP $\\($fe.StatusCode\\)\"; docker ps --format \"table {{.Names}}\\\\t{{.Status}}\" 2>&1)"
     ]
   }
 }
